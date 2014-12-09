@@ -9,6 +9,7 @@
 namespace Piwik;
 
 use Exception;
+use Piwik\Cache\Backend;
 use Piwik\Container\StaticContainer;
 
 /**
@@ -16,27 +17,19 @@ use Piwik\Container\StaticContainer;
  *
  * It is for example used by the Tracker process to cache various settings and websites attributes in tmp/cache/tracker/*
  *
+ * @deprecated
  */
 class CacheFile
 {
-    // for testing purposes since tests run on both CLI/FPM (changes in CLI can't invalidate
-    // opcache in FPM, so we have to invalidate before reading)
-    public static $invalidateOpCacheBeforeRead = false;
-
-    /**
-     * @var string
-     */
-    private $cachePath;
-
     /**
      * Minimum enforced TTL in seconds
      */
     const MINIMUM_TTL = 60;
 
     /**
-     * @var \Callable[]
+     * @var
      */
-    private static $onDeleteCallback = array();
+    private $fileBackend;
 
     /**
      * @param string $directory directory to use
@@ -44,11 +37,14 @@ class CacheFile
      */
     public function __construct($directory, $timeToLiveInSeconds = 300)
     {
-        $this->cachePath = StaticContainer::getContainer()->get('path.tmp') . '/cache/' . $directory . '/';
+        $directory = StaticContainer::getContainer()->get('path.tmp') . '/cache/' . $directory . '/';
+
+        $this->fileBackend = new Backend\File($directory);
 
         if ($timeToLiveInSeconds < self::MINIMUM_TTL) {
             $timeToLiveInSeconds = self::MINIMUM_TTL;
         }
+
         $this->ttl = $timeToLiveInSeconds;
     }
 
@@ -66,44 +62,7 @@ class CacheFile
 
         $id = $this->cleanupId($id);
 
-        $cache_complete = false;
-        $content        = '';
-        $expires_on     = false;
-
-        // We are assuming that most of the time cache will exists
-        $cacheFilePath = $this->cachePath . $id . '.php';
-        if (self::$invalidateOpCacheBeforeRead) {
-            $this->opCacheInvalidate($cacheFilePath);
-        }
-
-        $ok = @include($cacheFilePath);
-
-        if ($ok && $cache_complete == true) {
-
-            if (empty($expires_on)
-                || $expires_on < time()
-            ) {
-                return false;
-            }
-
-            return $content;
-        }
-
-        return false;
-    }
-
-    private function getExpiresTime()
-    {
-        return time() + $this->ttl;
-    }
-
-    protected function cleanupId($id)
-    {
-        if (!Filesystem::isValidFilename($id)) {
-            throw new Exception("Invalid cache ID request $id");
-        }
-
-        return $id;
+        return $this->fileBackend->doFetch($id);
     }
 
     /**
@@ -120,47 +79,9 @@ class CacheFile
             return false;
         }
 
-        if (!is_dir($this->cachePath)) {
-            Filesystem::mkdir($this->cachePath);
-        }
-
-        if (!is_writable($this->cachePath)) {
-            return false;
-        }
-
         $id = $this->cleanupId($id);
-        $id = $this->cachePath . $id . '.php';
 
-        if (is_object($content)) {
-            throw new \Exception('You cannot use the CacheFile to cache an object, only arrays, strings and numbers.');
-        }
-
-        $cache_literal = $this->buildCacheLiteral($content);
-
-        // Write cache to a temp file, then rename it, overwriting the old cache
-        // On *nix systems this should guarantee atomicity
-        $tmp_filename = tempnam($this->cachePath, 'tmp_');
-        @chmod($tmp_filename, 0640);
-        if ($fp = @fopen($tmp_filename, 'wb')) {
-            @fwrite($fp, $cache_literal, strlen($cache_literal));
-            @fclose($fp);
-
-            if (!@rename($tmp_filename, $id)) {
-                // On some systems rename() doesn't overwrite destination
-                @unlink($id);
-                if (!@rename($tmp_filename, $id)) {
-                    // Make sure that no temporary file is left over
-                    // if the destination is not writable
-                    @unlink($tmp_filename);
-                }
-            }
-
-            $this->opCacheInvalidate($id);
-
-            return true;
-        }
-
-        return false;
+        return $this->fileBackend->doSave($id, $content, $this->ttl);
     }
 
     /**
@@ -177,20 +98,12 @@ class CacheFile
 
         $id = $this->cleanupId($id);
 
-        $filename = $this->cachePath . $id . '.php';
-
-        if (file_exists($filename)) {
-            $this->opCacheInvalidate($filename);
-            @unlink($filename);
-            return true;
-        }
-
-        return false;
+        return $this->fileBackend->doDelete($id);
     }
 
     public function addOnDeleteCallback($onDeleteCallback)
     {
-        self::$onDeleteCallback[] = $onDeleteCallback;
+        $this->fileBackend->addOnDeleteCallback($onDeleteCallback);
     }
 
     /**
@@ -198,40 +111,17 @@ class CacheFile
      */
     public function deleteAll()
     {
-        $self = $this;
-        $beforeUnlink = function ($path) use ($self) {
-            $self->opCacheInvalidate($path);
-        };
-
-        Filesystem::unlinkRecursive($this->cachePath, $deleteRootToo = false, $beforeUnlink);
-
-        if (!empty(self::$onDeleteCallback)) {
-            foreach (self::$onDeleteCallback as $callback) {
-                $callback();
-            }
-        }
+        return $this->fileBackend->doFlush();
     }
 
-    public function opCacheInvalidate($filepath)
+
+    protected function cleanupId($id)
     {
-        if (is_file($filepath)) {
-            if (function_exists('opcache_invalidate')) {
-                @opcache_invalidate($filepath, $force = true);
-            }
-            if (function_exists('apc_delete_file')) {
-                @apc_delete_file($filepath);
-            }
+        if (!Filesystem::isValidFilename($id)) {
+            throw new Exception("Invalid cache ID request $id");
         }
+
+        return $id;
     }
 
-    private function buildCacheLiteral($content)
-    {
-        $cache_literal  = "<" . "?php\n";
-        $cache_literal .= "$" . "content   = " . var_export($content, true) . ";\n";
-        $cache_literal .= "$" . "expires_on   = " . $this->getExpiresTime() . ";\n";
-        $cache_literal .= "$" . "cache_complete   = true;\n";
-        $cache_literal .= "?" . ">";
-
-        return $cache_literal;
-    }
 }
