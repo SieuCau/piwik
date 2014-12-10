@@ -90,7 +90,7 @@ class SettingsStorageTest extends StorageTest
 
     private function getCache()
     {
-        return CacheFactory::buildPrepopulatedCache($this->storage->getOptionKey());
+        return CacheFactory::buildMultiCache($this->storage->getOptionKey());
     }
 
     private function setSettingValueInCache($value)

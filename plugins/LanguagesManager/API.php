@@ -272,7 +272,7 @@ class API extends \Piwik\Plugin\API
             return;
         }
 
-        $cache = CacheFactory::buildPrepopulatedCache('availableLanguages');
+        $cache = CacheFactory::buildMultiCache('availableLanguages');
 
         if ($cache->has()) {
             $languagesInfo = $cache->get();

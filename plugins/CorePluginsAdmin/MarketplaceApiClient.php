@@ -24,7 +24,7 @@ class MarketplaceApiClient
 
     public static function clearAllCacheEntries()
     {
-        $cache = Cache\Factory::buildCache('marketplace', array('directory' => 'marketplace'));
+        $cache = Cache\Factory::buildCache(null);
         $cache->flushAll();
     }
 
@@ -157,12 +157,12 @@ class MarketplaceApiClient
     {
         $cacheKey = $this->getCacheKey($action, $query);
 
-        return Cache\Factory::buildCache($cacheKey, array('directory' => 'marketplace'));
+        return Cache\Factory::buildCache($cacheKey);
     }
 
     private function getCacheKey($action, $query)
     {
-        return sprintf('api.1.0.%s.%s', str_replace('/', '.', $action), md5($query));
+        return sprintf('marketplace.api.1.0.%s.%s', str_replace('/', '.', $action), md5($query));
     }
 
     /**

@@ -42,7 +42,7 @@ class SettingsStorage extends Storage
 
     private function getCache()
     {
-        return CacheFactory::buildPrepopulatedCache($this->getOptionKey());
+        return CacheFactory::buildMultiCache($this->getOptionKey());
     }
 
     public static function clearCache()

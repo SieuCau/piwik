@@ -737,7 +737,7 @@ class Report
     {
         $reports = self::getAllReportClasses();
         $cacheId = CacheId::languageAware('Reports' . implode('', $reports));
-        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
+        $cache   = CacheFactory::buildMultiCache($cacheId);
 
         if (!$cache->has()) {
             $instances = array();

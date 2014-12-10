@@ -80,12 +80,12 @@ logger_file_path = tmp/logs/piwik.log
 
 [Cache]
 backend = chained
+; TODO with DI we want to let users optionally configure an absolute path maybe
+namespace = tracker
+
+[ChainedCache]
 backends[] = array
 backends[] = file
-
-[FileCache]
-; TODO with DI we want to let users optionally configure an absolute path maybe
-directory = tracker
 
 [RedisCache]
 host = 127.0.0.1

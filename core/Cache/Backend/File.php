@@ -8,7 +8,7 @@
  */
 namespace Piwik\Cache\Backend;
 
-use Exception;
+use Doctrine\Common\Cache\PhpFileCache;
 use Piwik\Cache\Backend;
 use Piwik\Filesystem;
 
@@ -17,14 +17,8 @@ use Piwik\Filesystem;
  *
  * This cache creates one file per id. Every time you try to read the value it will load the cache file again.
  */
-class File implements Backend
+class File extends PhpFileCache implements Backend
 {
-
-    /**
-     * @var string
-     */
-    private $cachePath;
-
     // for testing purposes since tests run on both CLI/FPM (changes in CLI can't invalidate
     // opcache in FPM, so we have to invalidate before reading)
     // TODO ideally we can remove this kinda stuff with dependency injection by using another backend there
@@ -35,140 +29,50 @@ class File implements Backend
      */
     private static $onDeleteCallback = array();
 
-    /**
-     * @param string $directory directory to use
-     */
-    public function __construct($directory)
-    {
-        $this->cachePath = $directory;
-    }
+    protected $extension = '.php';
 
-    /**
-     * Fetches an entry from the cache.
-     *
-     * @param string $id The id of the cache entry to fetch.
-     *
-     * @return mixed The cached data or FALSE, if no cache entry exists for the given id.
-     */
     public function doFetch($id)
     {
-        $cache_complete = false;
-        $content        = '';
-        $expires_on     = false;
-
-        // We are assuming that most of the time cache will exists
-        $cacheFilePath = $this->cachePath . $id . '.php';
         if (self::$invalidateOpCacheBeforeRead) {
-            $this->opCacheInvalidate($cacheFilePath);
+            $this->invalidateCacheFile($id);
         }
 
-        $ok = @include($cacheFilePath);
-
-        if ($ok && $cache_complete == true) {
-
-            if (empty($expires_on)
-                || $expires_on < time()
-            ) {
-                return false;
-            }
-
-            return $content;
-        }
-
-        return false;
+        return parent::doFetch($id);
     }
 
-    /**
-     * Tests if an entry exists in the cache.
-     *
-     * @param string $id The cache id of the entry to check for.
-     *
-     * @return boolean TRUE if a cache entry exists for the given cache id, FALSE otherwise.
-     */
     public function doContains($id)
     {
-        return false !== $this->doFetch($id);
+        return parent::doContains($id);
     }
 
-    /**
-     * Puts data into the cache.
-     *
-     * @param string $id       The cache id.
-     * @param mixed  $data     The cache entry/data.
-     * @param int    $lifeTime The cache lifetime.
-     *                         If != 0, sets a specific lifetime for this cache entry (0 => infinite lifeTime).
-     *
-     * @return boolean TRUE if the entry was successfully stored in the cache, FALSE otherwise.
-     */
     public function doSave($id, $data, $lifeTime = 0)
     {
-        if (!is_dir($this->cachePath)) {
-            Filesystem::mkdir($this->cachePath);
+        if (!is_dir($this->directory)) {
+            Filesystem::mkdir($this->directory);
         }
 
-        if (!is_writable($this->cachePath)) {
+        if (!is_writable($this->directory)) {
             return false;
         }
 
-        $id = $this->cachePath . $id . '.php';
+        $success = parent::doSave($id, $data, $lifeTime);
 
-        if (is_object($data)) {
-            throw new \Exception('You cannot use the CacheFile to cache an object, only arrays, strings and numbers.');
-        }
+        $this->invalidateCacheFile($id);
 
-        $cache_literal = $this->buildCacheLiteral($data, $lifeTime);
-
-        // Write cache to a temp file, then rename it, overwriting the old cache
-        // On *nix systems this should guarantee atomicity
-        $tmp_filename = tempnam($this->cachePath, 'tmp_');
-        @chmod($tmp_filename, 0640);
-        if ($fp = @fopen($tmp_filename, 'wb')) {
-            @fwrite($fp, $cache_literal, strlen($cache_literal));
-            @fclose($fp);
-
-            if (!@rename($tmp_filename, $id)) {
-                // On some systems rename() doesn't overwrite destination
-                @unlink($id);
-                if (!@rename($tmp_filename, $id)) {
-                    // Make sure that no temporary file is left over
-                    // if the destination is not writable
-                    @unlink($tmp_filename);
-                }
-            }
-
-            $this->opCacheInvalidate($id);
-
-            return true;
-        }
-
-        return false;
+        return $success;
     }
 
-    /**
-     * Deletes a cache entry.
-     *
-     * @param string $id The cache id.
-     *
-     * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
-     */
     public function doDelete($id)
     {
-        $filename = $this->cachePath . $id . '.php';
+        $this->invalidateCacheFile($id);
 
-        if (file_exists($filename)) {
-            $this->opCacheInvalidate($filename);
-            @unlink($filename);
-            return true;
-        }
+        $success = parent::doDelete($id);
 
-        return false;
+        $this->invalidateCacheFile($id);
+
+        return $success;
     }
 
-    /**
-     * Retrieves cached information from the data store.
-     *
-     * @return array|null An associative array with server's statistics if available, NULL otherwise.
-     */
     public function doFlush()
     {
         $self = $this;
@@ -176,7 +80,7 @@ class File implements Backend
             $self->opCacheInvalidate($path);
         };
 
-        Filesystem::unlinkRecursive($this->cachePath, $deleteRootToo = false, $beforeUnlink);
+        Filesystem::unlinkRecursive($this->directory, $deleteRootToo = false, $beforeUnlink);
 
         if (!empty(self::$onDeleteCallback)) {
             foreach (self::$onDeleteCallback as $callback) {
@@ -185,9 +89,23 @@ class File implements Backend
         }
     }
 
-    private function getExpiresTime($ttl)
+    private function invalidateCacheFile($id)
     {
-        return time() + $ttl;
+        $filename = $this->getFilename($id);
+        $this->opCacheInvalidate($filename);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return string
+     */
+    protected function getFilename($id)
+    {
+        $path = $this->directory . DIRECTORY_SEPARATOR;
+        $id   = preg_replace('@[\\\/:"*?<>|]+@', '', $id);
+
+        return $path . DIRECTORY_SEPARATOR . $id . $this->extension;
     }
 
     public function addOnDeleteCallback($onDeleteCallback)
@@ -205,16 +123,5 @@ class File implements Backend
                 @apc_delete_file($filepath);
             }
         }
-    }
-
-    private function buildCacheLiteral($content, $ttl)
-    {
-        $cache_literal  = "<" . "?php\n";
-        $cache_literal .= "$" . "content   = " . var_export($content, true) . ";\n";
-        $cache_literal .= "$" . "expires_on   = " . $this->getExpiresTime($ttl) . ";\n";
-        $cache_literal .= "$" . "cache_complete   = true;\n";
-        $cache_literal .= "?" . ">";
-
-        return $cache_literal;
     }
 }

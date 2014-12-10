@@ -11,7 +11,7 @@ namespace Piwik\Cache\Backend;
 use Piwik\Cache\Backend;
 
 /**
- * This class is used to cache data on the filesystem.
+ * TODO: extend Doctrine ChainCache as soon as available
  */
 class Chained implements \Piwik\Cache\Backend
 {
@@ -20,9 +20,9 @@ class Chained implements \Piwik\Cache\Backend
      */
     private $backends = array();
 
-    public function addBackend(Backend $backend)
+    public function __construct($backends = array())
     {
-        $this->backends = $backend;
+        $this->backends = $backends;
     }
 
     public function doFetch($id)
@@ -34,7 +34,7 @@ class Chained implements \Piwik\Cache\Backend
                 // We populate all the previous cache layers (that are assumed to be faster)
                 // EG If chain is ARRAY => REDIS => DB and we find result in DB we will update REDIS and ARRAY
                 for ($subKey = $key - 1 ; $subKey >= 0 ; $subKey--) {
-                    $this->backends[$subKey]->doSave($id, $value);
+                    $this->backends[$subKey]->doSave($id, $value, 300); // TODO we should use the actual TTL here
                 }
 
                 return $value;

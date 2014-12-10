@@ -118,7 +118,7 @@ class Manager extends Singleton
      */
     public function loadTrackerPlugins()
     {
-        $cache = Cache\Factory::buildPrepopulatedCache('PluginsTracker');
+        $cache = Cache\Factory::buildMultiCache('PluginsTracker');
 
         if ($cache->has()) {
             $pluginsTracker = $cache->get();

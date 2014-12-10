@@ -251,7 +251,7 @@ class Metrics
     public static function getDefaultMetricTranslations()
     {
         $cacheId = CacheId::pluginAware('DefaultMetricTranslations');
-        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
+        $cache   = CacheFactory::buildMultiCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -311,7 +311,7 @@ class Metrics
     public static function getDefaultMetrics()
     {
         $cacheId = CacheId::languageAware('DefaultMetrics');
-        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
+        $cache   = CacheFactory::buildMultiCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -333,7 +333,7 @@ class Metrics
     public static function getDefaultProcessedMetrics()
     {
         $cacheId = CacheId::languageAware('DefaultProcessedMetrics');
-        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
+        $cache   = CacheFactory::buildMultiCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -387,7 +387,7 @@ class Metrics
     public static function getDefaultMetricsDocumentation()
     {
         $cacheId = CacheId::pluginAware('DefaultMetricsDocumentation');
-        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
+        $cache   = CacheFactory::buildMultiCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();

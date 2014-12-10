@@ -20,7 +20,7 @@ use Piwik\Version;
  *
  * This cache uses one file for all keys. We will load the cache file only once.
  */
-class Prepopulated extends Cache
+class Multi
 {
     private static $content = null;
     private static $isDirty = false;
@@ -97,7 +97,8 @@ class Prepopulated extends Cache
      */
     public function flushAll()
     {
-        self::_reset();
+        $this->backend->doFlush();
+        self::$content = array();
         return true;
     }
 
@@ -148,14 +149,6 @@ class Prepopulated extends Cache
 
             $this->backend->doSave(self::getCacheFilename() . $mode, self::$content, self::$ttl);
         }
-    }
-
-    /**
-     * @ignore
-     */
-    public static function _reset()
-    {
-        self::$content = array();
     }
 
 }

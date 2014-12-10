@@ -131,7 +131,7 @@ class Plugin
         }
         $this->pluginName = $pluginName;
 
-        $cache = Cache\Factory::buildPrepopulatedCache('Plugin' . $pluginName . 'Metadata');
+        $cache = Cache\Factory::buildMultiCache('Plugin' . $pluginName . 'Metadata');
 
         if ($cache->has()) {
             $this->pluginInformation = $cache->get();
@@ -150,7 +150,7 @@ class Plugin
     private function createCacheIfNeeded()
     {
         if (is_null($this->cache)) {
-            $this->cache = Cache\Factory::buildPrepopulatedCache('Plugin' . $this->pluginName);
+            $this->cache = Cache\Factory::buildMultiCache('Plugin' . $this->pluginName);
         }
     }
 

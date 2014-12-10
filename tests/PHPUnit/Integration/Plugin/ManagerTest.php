@@ -75,7 +75,7 @@ class ManagerTest extends IntegrationTestCase
 
     private function getCacheForTrackerPlugins()
     {
-        return CacheFactory::buildPrepopulatedCache('PluginsTracker');
+        return CacheFactory::buildMultiCache('PluginsTracker');
     }
 
     private function assertOnlyTrackerPluginsAreLoaded($expectedPluginNamesLoaded)

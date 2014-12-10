@@ -322,7 +322,7 @@ class Updater extends \Piwik\Updates
 
     private static function buildCache()
     {
-        return CacheFactory::buildPrepopulatedCache('AllDimensionModifyTime');
+        return CacheFactory::buildMultiCache('AllDimensionModifyTime');
     }
 
     private static function getCachedDimensionFileChanges()
