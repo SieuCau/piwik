@@ -8,6 +8,7 @@
  */
 namespace Piwik;
 
+use Piwik\Cache\Factory as CacheFactory;
 use Exception;
 
 /**
@@ -17,9 +18,18 @@ use Exception;
  *
  * Static caching speeds up multiple detections in one request, which is the case when sending bulk requests
  */
-class DeviceDetectorCache extends CacheFile implements \DeviceDetector\Cache\CacheInterface
+class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
 {
     protected static $staticCache = array();
+
+    private $cache;
+    private $ttl;
+
+    public function __construct($ttl = 300)
+    {
+        $this->ttl   = (int) $ttl;
+        $this->cache = CacheFactory::buildCache('DeviceDetector');
+    }
 
     /**
      * Function to fetch a cache entry
@@ -39,7 +49,9 @@ class DeviceDetectorCache extends CacheFile implements \DeviceDetector\Cache\Cac
             return self::$staticCache[$id];
         }
 
-        return parent::get($id);
+        $this->cache->setId($id);
+
+        return $this->cache->get();
     }
 
     /**
@@ -60,6 +72,17 @@ class DeviceDetectorCache extends CacheFile implements \DeviceDetector\Cache\Cac
 
         self::$staticCache[$id] = $content;
 
-        return parent::set($id, $content);
+        $this->cache->setId($id);
+        return $this->cache->set($content, $this->ttl);
     }
+
+    protected function cleanupId($id)
+    {
+        if (!Filesystem::isValidFilename($id)) {
+            throw new Exception("Invalid cache ID request $id");
+        }
+
+        return $id;
+    }
+
 }

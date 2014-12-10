@@ -8,7 +8,7 @@
  */
 namespace Piwik\Plugins\CorePluginsAdmin;
 
-use Piwik\CacheFile;
+use Piwik\Cache;
 use Piwik\Http;
 use Piwik\Version;
 
@@ -22,20 +22,10 @@ class MarketplaceApiClient
 
     private $domain = 'http://plugins.piwik.org';
 
-    /**
-     * @var CacheFile
-     */
-    private $cache = null;
-
-    public function __construct()
-    {
-        $this->cache = new CacheFile('marketplace', self::CACHE_TIMEOUT_IN_SECONDS);
-    }
-
     public static function clearAllCacheEntries()
     {
-        $cache = new CacheFile('marketplace');
-        $cache->deleteAll();
+        $cache = Cache\Factory::buildCache('marketplace', array('directory' => 'marketplace'));
+        $cache->flushAll();
     }
 
     public function getPluginInfo($name)
@@ -137,7 +127,9 @@ class MarketplaceApiClient
     {
         ksort($params);
         $query = http_build_query($params);
-        $result = $this->getCachedResult($action, $query);
+
+        $cache  = $this->buildCache($action, $query);
+        $result = $cache->get();
 
         if (false === $result) {
             $endpoint = $this->domain . '/api/1.0/';
@@ -155,24 +147,17 @@ class MarketplaceApiClient
                 throw new MarketplaceApiException($result['error']);
             }
 
-            $this->cacheResult($action, $query, $result);
+            $cache->set($result, self::CACHE_TIMEOUT_IN_SECONDS);
         }
 
         return $result;
     }
 
-    private function getCachedResult($action, $query)
+    private function buildCache($action, $query)
     {
         $cacheKey = $this->getCacheKey($action, $query);
 
-        return $this->cache->get($cacheKey);
-    }
-
-    private function cacheResult($action, $query, $result)
-    {
-        $cacheKey = $this->getCacheKey($action, $query);
-
-        $this->cache->set($cacheKey, $result);
+        return Cache\Factory::buildCache($cacheKey, array('directory' => 'marketplace'));
     }
 
     private function getCacheKey($action, $query)

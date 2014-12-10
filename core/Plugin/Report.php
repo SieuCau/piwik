@@ -10,11 +10,12 @@ namespace Piwik\Plugin;
 
 use Piwik\API\Proxy;
 use Piwik\API\Request;
-use Piwik\Cache\LanguageAwareStaticCache;
+use Piwik\Cache\CacheId;
 use Piwik\Columns\Dimension;
 use Piwik\DataTable;
 use Piwik\Menu\MenuReporting;
 use Piwik\Metrics;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Piwik;
 use Piwik\Plugin\Manager as PluginManager;
 use Piwik\Plugins\CoreVisualizations\Visualizations\HtmlTable;
@@ -735,7 +736,8 @@ class Report
     public static function getAllReports()
     {
         $reports = self::getAllReportClasses();
-        $cache   = new LanguageAwareStaticCache('Reports' . implode('', $reports));
+        $cacheId = CacheId::languageAware('Reports' . implode('', $reports));
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if (!$cache->has()) {
             $instances = array();

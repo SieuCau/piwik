@@ -15,7 +15,7 @@ use Piwik\Filesystem;
 /**
  * This class is used to cache data on the filesystem.
  *
- * This cache creates one file per id.
+ * This cache creates one file per id. Every time you try to read the value it will load the cache file again.
  */
 class File implements Backend
 {

@@ -8,8 +8,7 @@
 
 namespace Piwik\Tests\Integration\Tracker;
 
-use Piwik\Cache\PersistentCache;
-use Piwik\Option;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Settings\Storage;
 use Piwik\Tests\Integration\Settings\StorageTest;
 use Piwik\Tracker\Cache;
@@ -91,7 +90,7 @@ class SettingsStorageTest extends StorageTest
 
     private function getCache()
     {
-        return new PersistentCache($this->storage->getOptionKey());
+        return CacheFactory::buildPrepopulatedCache($this->storage->getOptionKey());
     }
 
     private function setSettingValueInCache($value)

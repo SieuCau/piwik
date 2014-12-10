@@ -8,7 +8,7 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\PersistentCache;
+use Piwik\Cache\Prepopulated;
 use Piwik\Plugin\Dependency;
 use Piwik\Plugin\MetadataLoader;
 
@@ -111,7 +111,7 @@ class Plugin
      * perfect but efficient. If the cache is used we need to make sure to call setCacheKey() before usage as there
      * is maybe a different key set since last usage.
      *
-     * @var PersistentCache
+     * @var Prepopulated
      */
     private $cache;
 
@@ -131,12 +131,11 @@ class Plugin
         }
         $this->pluginName = $pluginName;
 
-        $cache = new PersistentCache('Plugin' . $pluginName . 'Metadata');
+        $cache = Cache\Factory::buildPrepopulatedCache('Plugin' . $pluginName . 'Metadata');
 
         if ($cache->has()) {
             $this->pluginInformation = $cache->get();
         } else {
-
             $metadataLoader = new MetadataLoader($pluginName);
             $this->pluginInformation = $metadataLoader->load();
 
@@ -151,7 +150,7 @@ class Plugin
     private function createCacheIfNeeded()
     {
         if (is_null($this->cache)) {
-            $this->cache = new PersistentCache('Plugin' . $this->pluginName);
+            $this->cache = Cache\Factory::buildPrepopulatedCache('Plugin' . $this->pluginName);
         }
     }
 

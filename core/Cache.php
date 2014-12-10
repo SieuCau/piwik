@@ -13,39 +13,28 @@ use Piwik\Cache\Backend;
 class Cache
 {
     private $backend;
+    private $id;
 
     public function __construct(Backend $backend)
     {
         $this->backend = $backend;
     }
 
-    /**
-     * The namespace to prefix all cache ids with.
-     *
-     * @var string
-     */
-    private $namespace = '';
-
-    /**
-     * Sets the namespace to prefix all cache ids with.
-     *
-     * @param string $namespace
-     *
-     * @return void
-     */
-    public function setNamespace($namespace)
+    public function setId($id)
     {
-        $this->namespace = (string) $namespace;
+        $this->checkId($id);
+        $this->id = $this->completeKey($id);
     }
 
-    /**
-     * Retrieves the namespace that prefixes all cache ids.
-     *
-     * @return string
-     */
-    public function getNamespace()
+    private function checkId($id)
     {
-        return $this->namespace;
+        if (empty($id)) {
+            throw new \Exception('Empty cache ID given');
+        }
+
+        if (!Filesystem::isValidFilename($id)) {
+            throw new \Exception("Invalid cache ID request $id");
+        }
     }
 
     /**
@@ -55,94 +44,53 @@ class Cache
      *
      * @return string The namespaced id.
      */
-    private function getNamespacedId($id)
+    protected function completeKey($id)
     {
-        return sprintf('piwikcache-%s-%s]', $this->getNamespace(), $id);
+        return sprintf('piwikcache_%s', $id);
     }
-
-    protected function getNamespacedIdIfValid($id)
-    {
-        if (!Filesystem::isValidFilename($id)) {
-            throw new \Exception("Invalid cache ID request $id");
-        }
-
-        return $this->getNamespacedId($id);
-    }
-
 
     /**
      * Fetches an entry from the cache.
      *
-     * @param string $id The id of the cache entry to fetch.
-     *
      * @return mixed The cached data or FALSE, if no cache entry exists for the given id.
      */
-    public function fetch($id)
+    public function get()
     {
-        if (empty($id)) {
-            return false;
-        }
-
-        $id = $this->getNamespacedIdIfValid($id);
-
-        return $this->backend->doFetch($id);
+        return $this->backend->doFetch($this->id);
     }
 
     /**
      * Tests if an entry exists in the cache.
      *
-     * @param string $id The cache id of the entry to check for.
-     *
      * @return boolean TRUE if a cache entry exists for the given cache id, FALSE otherwise.
      */
-    public function contains($id)
+    public function has()
     {
-        if (empty($id)) {
-            return false;
-        }
-
-        $id = $this->getNamespacedIdIfValid($id);
-
-        return $this->backend->doContains($id);
+        return $this->backend->doContains($this->id);
     }
 
     /**
      * Puts data into the cache.
      *
-     * @param string $id       The cache id.
      * @param mixed  $data     The cache entry/data.
      * @param int    $lifeTime The cache lifetime.
      *                         If != 0, sets a specific lifetime for this cache entry (0 => infinite lifeTime).
      *
      * @return boolean TRUE if the entry was successfully stored in the cache, FALSE otherwise.
      */
-    public function save($id, $data, $lifeTime = 0)
+    public function set($data, $lifeTime = 0)
     {
-        if (empty($id)) {
-            return false;
-        }
-
-        $id = $this->getNamespacedIdIfValid($id);
-
-        return $this->backend->doSave($id, $data, $lifeTime);
+        return $this->backend->doSave($this->id, $data, $lifeTime);
     }
 
     /**
      * Deletes a cache entry.
      *
-     * @param string $id The cache id.
-     *
      * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
      */
-    public function delete($id)
+    public function delete()
     {
-        if (empty($id)) {
-            return false;
-        }
-
-        $id = $this->getNamespacedIdIfValid($id);
-
-        return $this->backend->doDelete($id);
+        return $this->backend->doDelete($this->id);
     }
 
     /**

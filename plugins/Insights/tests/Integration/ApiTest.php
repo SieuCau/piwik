@@ -8,8 +8,7 @@
 
 namespace Piwik\Plugins\Insights\tests;
 use Piwik\API\Request as ApiRequest;
-use Piwik\Cache\PluginAwareStaticCache;
-use Piwik\Cache\StaticCache;
+use Piwik\Cache\Prepopulated;
 use Piwik\DataTable;
 use Piwik\DataTable\Row;
 use Piwik\Plugins\Insights\API;
@@ -40,8 +39,7 @@ class ApiTest extends SystemTestCase
     {
         parent::setUp();
 
-        StaticCache::clearAll();
-        PluginAwareStaticCache::clearAll();
+        Prepopulated::_reset();
 
         Translate::reloadLanguage('en');
         $this->api = API::getInstance();

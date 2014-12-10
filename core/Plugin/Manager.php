@@ -9,8 +9,7 @@
 
 namespace Piwik\Plugin;
 
-use Piwik\Cache\PersistentCache;
-use Piwik\CacheFile;
+use Piwik\Cache;
 use Piwik\Columns\Dimension;
 use Piwik\Common;
 use Piwik\Config as PiwikConfig;
@@ -119,7 +118,7 @@ class Manager extends Singleton
      */
     public function loadTrackerPlugins()
     {
-        $cache = new PersistentCache('PluginsTracker');
+        $cache = Cache\Factory::buildPrepopulatedCache('PluginsTracker');
 
         if ($cache->has()) {
             $pluginsTracker = $cache->get();
@@ -697,7 +696,6 @@ class Manager extends Singleton
             $language = Translate::getLanguageToLoad();
         }
 
-        $cache    = new CacheFile('tracker', 43200); // ttl=12hours
         $cacheKey = 'PluginTranslations';
 
         if (!empty($language)) {
@@ -709,7 +707,8 @@ class Manager extends Singleton
             $cacheKey .= '-' . md5(implode('', $this->getLoadedPluginsName()));
         }
 
-        $translations = $cache->get($cacheKey);
+        $cache = Cache\Factory::buildCache($cacheKey);
+        $translations = $cache->get();
 
         if (!empty($translations) &&
             is_array($translations) &&
@@ -734,7 +733,7 @@ class Manager extends Singleton
             }
         }
 
-        $cache->set($cacheKey, $translations);
+        $cache->set($translations, 43200); // ttl=12hours
     }
 
     /**

@@ -8,7 +8,8 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Plugin\Report;
 use Piwik\Plugin\Widgets;
 
@@ -275,6 +276,7 @@ class WidgetsList extends Singleton
 
     private static function getCacheForCompleteList()
     {
-        return new PluginAwareStaticCache('WidgetsList');
+        $cacheId = CacheId::pluginAware('WidgetsList');
+        return CacheFactory::buildPrepopulatedCache($cacheId);
     }
 }

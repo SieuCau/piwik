@@ -10,12 +10,31 @@ namespace Piwik\Plugins\CacheProvider\Cache\Backend;
 
 use Doctrine\Common\Cache\RedisCache;
 use Piwik\Cache\Backend;
+use Piwik\Common;
 
 /**
  * This class is used to cache data on the filesystem.
  */
 class Redis extends RedisCache implements Backend
 {
+    public function __construct($options)
+    {
+        $redis = new \Redis();
+
+        $timeout = (float) Common::forceDotAsSeparatorForDecimalPoint($options['timeout']);
+
+        $redis->connect($options['host'], $options['port'], $timeout);
+
+        if (!empty($options['password'])) {
+            $redis->auth($options['password']);
+        }
+
+        if (array_key_exists('database', $options)) {
+            $redis->select((int) $options['database']);
+        }
+
+        $this->setRedis($redis);
+    }
 
     public function doFetch($id)
     {

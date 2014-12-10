@@ -8,7 +8,8 @@
  */
 namespace Piwik\Plugin\Dimension;
 
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Columns\Dimension;
 use Piwik\Plugin\Manager as PluginManager;
 use Piwik\Common;
@@ -155,7 +156,8 @@ abstract class ConversionDimension extends Dimension
      */
     public static function getAllDimensions()
     {
-        $cache = new PluginAwareStaticCache('ConversionDimensions');
+        $cacheId = CacheId::pluginAware('ConversionDimensions');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if (!$cache->has()) {
 

@@ -8,7 +8,8 @@
  */
 namespace Piwik\Plugin\Dimension;
 
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Columns\Dimension;
 use Piwik\Plugin\Manager as PluginManager;
 use Piwik\Plugin\Segment;
@@ -212,7 +213,8 @@ abstract class ActionDimension extends Dimension
      */
     public static function getAllDimensions()
     {
-        $cache = new PluginAwareStaticCache('ActionDimensions');
+        $cacheId = CacheId::pluginAware('ActionDimensions');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if (!$cache->has()) {
 

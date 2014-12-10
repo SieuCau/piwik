@@ -78,6 +78,22 @@ log_only_when_debug_parameter = 0
 ; if configured to log in a file, log entries will be made to this file
 logger_file_path = tmp/logs/piwik.log
 
+[Cache]
+backend = chained
+backends[] = array
+backends[] = file
+
+[FileCache]
+; TODO with DI we want to let users optionally configure an absolute path maybe
+directory = tracker
+
+[RedisCache]
+host = 127.0.0.1
+port = 6379
+timeout = 0.0
+database = 0
+password = ""
+
 [Debug]
 ; if set to 1, the archiving process will always be triggered, even if the archive has already been computed
 ; this is useful when making changes to the archiving code so we can force the archiving process

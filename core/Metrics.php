@@ -8,8 +8,8 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\LanguageAwareStaticCache;
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Metrics\Formatter;
 
 require_once PIWIK_INCLUDE_PATH . "/core/Piwik.php";
@@ -250,7 +250,8 @@ class Metrics
 
     public static function getDefaultMetricTranslations()
     {
-        $cache = new PluginAwareStaticCache('DefaultMetricTranslations');
+        $cacheId = CacheId::pluginAware('DefaultMetricTranslations');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -309,7 +310,8 @@ class Metrics
 
     public static function getDefaultMetrics()
     {
-        $cache = new LanguageAwareStaticCache('DefaultMetrics');
+        $cacheId = CacheId::languageAware('DefaultMetrics');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -330,7 +332,8 @@ class Metrics
 
     public static function getDefaultProcessedMetrics()
     {
-        $cache = new LanguageAwareStaticCache('DefaultProcessedMetrics');
+        $cacheId = CacheId::languageAware('DefaultProcessedMetrics');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();
@@ -383,7 +386,8 @@ class Metrics
 
     public static function getDefaultMetricsDocumentation()
     {
-        $cache = new PluginAwareStaticCache('DefaultMetricsDocumentation');
+        $cacheId = CacheId::pluginAware('DefaultMetricsDocumentation');
+        $cache   = CacheFactory::buildPrepopulatedCache($cacheId);
 
         if ($cache->has()) {
             return $cache->get();

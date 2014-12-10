@@ -10,7 +10,7 @@ namespace Piwik\Tracker;
 
 use Piwik\Access;
 use Piwik\ArchiveProcessor\Rules;
-use Piwik\CacheFile;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Common;
 use Piwik\Config;
 use Piwik\Option;
@@ -25,17 +25,43 @@ class Cache
 {
     /**
      * Public for tests only
-     * @var CacheFile
+     * @var Cache[]
      */
-    public static $trackerCache = null;
+    public static $idSiteCache = array();
 
-    protected static function getInstance()
+    /**
+     * Public for tests only
+     * @var Cache
+     */
+    public static $generalCache = null;
+
+    /**
+     * @return \Piwik\Cache
+     */
+    private static function getGeneralCache()
     {
-        if (is_null(self::$trackerCache)) {
-            $ttl = Config::getInstance()->Tracker['tracker_cache_file_ttl'];
-            self::$trackerCache = new CacheFile('tracker', $ttl);
+        if (is_null(self::$generalCache)) {
+            self::$generalCache = CacheFactory::buildCache('general');
         }
-        return self::$trackerCache;
+
+        return self::$generalCache;
+    }
+
+    /**
+     * @return \Piwik\Cache
+     */
+    private static function getIdSiteCache($idSite)
+    {
+        if (!array_key_exists($idSite, self::$idSiteCache)) {
+            self::$idSiteCache[$idSite] = CacheFactory::buildCache($idSite);
+        }
+
+        return self::$idSiteCache[$idSite];
+    }
+
+    private static function getTtl()
+    {
+        return Config::getInstance()->Tracker['tracker_cache_file_ttl'];
     }
 
     /**
@@ -55,8 +81,8 @@ class Cache
             return array();
         }
 
-        $cache        = self::getInstance();
-        $cacheContent = $cache->get($idSite);
+        $cache = self::getIdSiteCache($idSite);
+        $cacheContent = $cache->get();
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -91,7 +117,7 @@ class Cache
         // if nothing is returned from the plugins, we don't save the content
         // this is not expected: all websites are expected to have at least one URL
         if (!empty($content)) {
-            $cache->set($idSite, $content);
+            $cache->set($content, self::getTtl());
         }
 
         return $content;
@@ -102,7 +128,7 @@ class Cache
      */
     public static function clearCacheGeneral()
     {
-        self::getInstance()->delete('general');
+        self::getGeneralCache()->delete();
     }
 
     /**
@@ -113,10 +139,8 @@ class Cache
      */
     public static function getCacheGeneral()
     {
-        $cache   = self::getInstance();
-        $cacheId = 'general';
-
-        $cacheContent = $cache->get($cacheId);
+        $cache = self::getGeneralCache();
+        $cacheContent = $cache->get();
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -162,9 +186,8 @@ class Cache
      */
     public static function setCacheGeneral($value)
     {
-        $cache   = self::getInstance();
-        $cacheId = 'general';
-        $cache->set($cacheId, $value);
+        $cache = self::getGeneralCache();
+        $cache->set($value);
 
         return true;
     }
@@ -194,7 +217,7 @@ class Cache
     public static function deleteCacheWebsiteAttributes($idSite)
     {
         $idSite = (int)$idSite;
-        self::getInstance()->delete($idSite);
+        self::getIdSiteCache($idSite)->delete();
     }
 
     /**
@@ -202,6 +225,6 @@ class Cache
      */
     public static function deleteTrackerCache()
     {
-        self::getInstance()->deleteAll();
+        self::getGeneralCache()->flushAll();
     }
 }

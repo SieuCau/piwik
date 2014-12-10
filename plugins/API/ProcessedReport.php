@@ -11,7 +11,8 @@ namespace Piwik\Plugins\API;
 use Exception;
 use Piwik\API\Request;
 use Piwik\Archive\DataTableFactory;
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Common;
 use Piwik\DataTable;
 use Piwik\DataTable\Row;
@@ -154,7 +155,8 @@ class ProcessedReport
         // as they cache key contains a lot of information there would be an even better cache result by caching parts of
         // this huge method separately but that makes it also more complicated. leaving it like this for now.
         $key   = $this->buildReportMetadataCacheKey($idSites, $period, $date, $hideMetricsDoc, $showSubtableReports);
-        $cache = new PluginAwareStaticCache($key);
+        $key   = CacheId::pluginAware($key);
+        $cache = CacheFactory::buildPrepopulatedCache($key);
 
         if ($cache->has()) {
             return $cache->get();

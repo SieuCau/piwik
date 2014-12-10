@@ -14,8 +14,8 @@ use Piwik\Plugin\Dimension\VisitDimension;
 use Piwik\Plugin\Dimension\ConversionDimension;
 use Piwik\Db;
 use Piwik\Updater as PiwikUpdater;
-use Piwik\Cache\PersistentCache;
 use Piwik\Filesystem;
+use Piwik\Cache\Factory as CacheFactory;
 
 /**
  * Class that handles dimension updates
@@ -315,15 +315,22 @@ class Updater extends \Piwik\Updates
     private static function cacheCurrentDimensionFileChanges()
     {
         $changes = self::getCurrentDimensionFileChanges();
-        $persistentCache = new PersistentCache('AllDimensionModifyTime');
-        $persistentCache->set($changes);
+
+        $cache = self::buildCache();
+        $cache->set($changes);
+    }
+
+    private static function buildCache()
+    {
+        return CacheFactory::buildPrepopulatedCache('AllDimensionModifyTime');
     }
 
     private static function getCachedDimensionFileChanges()
     {
-        $persistentCache = new PersistentCache('AllDimensionModifyTime');
-        if ($persistentCache->has()) {
-            return $persistentCache->get();
+        $cache = self::buildCache();
+
+        if ($cache->has()) {
+            return $cache->get();
         }
 
         return array();

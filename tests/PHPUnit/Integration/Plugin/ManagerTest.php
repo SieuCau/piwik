@@ -8,10 +8,10 @@
 
 namespace Piwik\Tests\Integration\Plugin;
 
-use Piwik\Cache\PersistentCache;
 use Piwik\Db;
 use Piwik\Plugin;
 use Piwik\Settings\Storage;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Tests\Integration\Settings\IntegrationTestCase;
 
 /**
@@ -75,7 +75,7 @@ class ManagerTest extends IntegrationTestCase
 
     private function getCacheForTrackerPlugins()
     {
-        return new PersistentCache('PluginsTracker');
+        return CacheFactory::buildPrepopulatedCache('PluginsTracker');
     }
 
     private function assertOnlyTrackerPluginsAreLoaded($expectedPluginNamesLoaded)

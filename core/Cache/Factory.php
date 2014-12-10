@@ -22,19 +22,30 @@ class Factory
      */
     private static $backends = array();
 
-    public static function buildDefaultCache($options = array())
+    private static $cacheId = null;
+
+    public static function buildCache($id, $options = array())
     {
+        // TODO options should be merged in DI
         $config  = Config::getInstance()->cache;
         $options = array_merge($config, $options);
 
-        return self::buildCache($config['backend'], $options);
+        $backend = $options['backend'];
+        $cache   = self::buildSpecificCache($backend, $options);
+
+        if (!empty($id)) {
+            $cache->setId($id);
+        }
+
+        return $cache;
     }
 
-    public static function flushAll()
+    public static function buildPrepopulatedCache($id, $options = array())
     {
-        foreach (self::$backends as $backend) {
-            $backend->doFlush();
-        }
+        $options['prepopulate'] = true;
+        $options['directory']   = 'tracker'; // TODO should come from DI
+
+        return self::buildCache($id, $options);
     }
 
     /**
@@ -42,10 +53,22 @@ class Factory
      * @param  array $options
      * @return Cache
      */
-    public static function buildCache($backend, $options = array())
+    private static function buildSpecificCache($backend, $options = array())
     {
-        $backend = self::buildCachedBackend($backend, $options);
-        $cache   = new Cache($backend);
+        $key = ucfirst($backend) . 'Cache';
+        $backendOptions = Config::getInstance()->$key;
+
+        if (!empty($backendOptions)) {
+            $options = array_merge($backendOptions, $options);
+        }
+
+        $backend = self::getCachedBackend($backend, $options);
+
+        if (!empty($options['prepopulate'])) {
+            $cache = new Prepopulated($backend);
+        } else {
+            $cache = new Cache($backend);
+        }
 
         return $cache;
     }
@@ -55,7 +78,7 @@ class Factory
      * @param array $options
      * @return Backend
      */
-    private static function buildCachedBackend($backend, $options)
+    public static function getCachedBackend($backend, $options)
     {
         $key = $backend . md5(implode('', $options));
 
@@ -82,9 +105,6 @@ class Factory
 
             case 'chained':
                 return self::getChainedCache($options);
-
-            case 'persistent':
-                return new Cache\Backend\FileStatic();
 
             default:
                 $type    = $backend;
@@ -117,7 +137,7 @@ class Factory
         $cache = new Cache\Backend\Chained();
 
         foreach ($options['backends'] as $backendToBuild) {
-            $backend = self::buildCachedBackend($backendToBuild, $options);
+            $backend = self::getCachedBackend($backendToBuild, $options);
             $cache->addBackend($backend);
         }
 

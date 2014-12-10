@@ -10,7 +10,8 @@ namespace Piwik\Plugins\Goals;
 
 use Exception;
 use Piwik\Archive;
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache\CacheId;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Common;
 use Piwik\DataTable;
 use Piwik\Db;
@@ -569,6 +570,8 @@ class API extends \Piwik\Plugin\API
 
     private function getGoalsInfoStaticCache($idSite)
     {
-        return new PluginAwareStaticCache("Goals.getGoals.$idSite");
+        $cacheId = CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
+
+        return CacheFactory::buildPrepopulatedCache($cacheId);
     }
 }

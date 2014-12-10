@@ -9,9 +9,10 @@
 
 namespace Piwik\Tracker;
 
-use Piwik\Cache\PersistentCache;
+use Piwik\Cache\Prepopulated;
 use Piwik\Settings\Storage;
 use Piwik\Tracker;
+use Piwik\Cache\Factory as CacheFactory;
 
 /**
  * Loads settings from tracker cache instead of database. If not yet present in tracker cache will cache it.
@@ -41,13 +42,13 @@ class SettingsStorage extends Storage
 
     private function getCache()
     {
-        return new PersistentCache($this->getOptionKey());
+        return CacheFactory::buildPrepopulatedCache($this->getOptionKey());
     }
 
     public static function clearCache()
     {
         Cache::deleteTrackerCache();
-        PersistentCache::_reset();
+        Prepopulated::_reset();
     }
 
 }

@@ -8,26 +8,24 @@
  */
 namespace Piwik\Plugins\SitesManager;
 
-use Piwik\CacheFile;
+use Piwik\Cache;
 use Piwik\Development;
 
 class SiteUrls
 {
-    private static $allUrlsCacheKey = 'allSiteUrlsPerSite';
-
     public static function clearSitesCache()
     {
-        self::getCache()->delete(self::$allUrlsCacheKey);
+        self::getCache()->delete();
     }
 
     public function getAllCachedSiteUrls()
     {
         $cache    = $this->getCache();
-        $siteUrls = $cache->get(self::$allUrlsCacheKey);
+        $siteUrls = $cache->get();
 
         if (empty($siteUrls) || Development::isEnabled()) {
             $siteUrls = $this->getAllSiteUrls();
-            $cache->set(self::$allUrlsCacheKey, $siteUrls);
+            $cache->set($siteUrls, 1800);
         }
 
         return $siteUrls;
@@ -53,6 +51,6 @@ class SiteUrls
 
     private static function getCache()
     {
-        return new CacheFile('tracker', 1800);
+        return Cache\Factory::buildCache('allSiteUrlsPerSite');
     }
 }
