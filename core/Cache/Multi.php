@@ -97,30 +97,28 @@ class Multi
      */
     public function flushAll()
     {
-        $this->backend->doFlush();
+        $this->backend->doDelete(self::getCacheId());
         self::$content = array();
         return true;
     }
 
     private function populateCache()
     {
-        if (Development::isEnabled()) {
+        if (Development::isEnabled()) { // Todo in DI shoud be set "null" cache
             return;
+        }
+
+        $content = $this->backend->doFetch(self::getCacheId());
+
+        if (is_array($content)) {
+            self::$content = $content;
         }
 
         // TODO needs to be done in DI
         if (SettingsServer::isTrackerApiRequest()) {
             $eventToPersist = 'Tracker.end';
-            $mode           = '-tracker';
         } else {
             $eventToPersist = 'Request.dispatch.end';
-            $mode           = '-ui';
-        }
-
-        $content = $this->backend->doFetch(self::getCacheFilename() . $mode);
-
-        if (is_array($content)) {
-            self::$content = $content;
         }
 
         $self = $this;
@@ -129,9 +127,16 @@ class Multi
         });
     }
 
-    private static function getCacheFilename()
+    private static function getCacheId()
     {
-        return 'StaticCache-' . str_replace(array('.', '-'), '', Version::VERSION);
+        if (SettingsServer::isTrackerApiRequest()) {
+            // TODO needs to be done in DI
+            $mode = '-tracker';
+        } else {
+            $mode = '-ui';
+        }
+
+        return 'MultiCache-' . str_replace(array('.', '-'), '', Version::VERSION) . $mode;
     }
 
     /**
@@ -140,14 +145,7 @@ class Multi
     public function persistCache()
     {
         if (self::$isDirty) {
-            if (SettingsServer::isTrackerApiRequest()) {
-                // TODO needs to be done in DI
-                $mode = '-tracker';
-            } else {
-                $mode = '-ui';
-            }
-
-            $this->backend->doSave(self::getCacheFilename() . $mode, self::$content, self::$ttl);
+            $this->backend->doSave(self::getCacheId(), self::$content, self::$ttl);
         }
     }
 

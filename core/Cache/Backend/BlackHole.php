@@ -9,7 +9,7 @@
 namespace Piwik\Cache\Backend;
 
 /**
- * Can be used in tests. Does not save anything, ever.
+ * Can be used in tests and development. Does not save anything, ever.
  */
 class BlackHole implements \Piwik\Cache\Backend
 {
