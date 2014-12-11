@@ -22,7 +22,7 @@ class Chained implements \Piwik\Cache\Backend
 
     public function __construct($backends = array())
     {
-        $this->backends = $backends;
+        $this->backends = array_values($backends);
     }
 
     public function doFetch($id)
@@ -68,13 +68,13 @@ class Chained implements \Piwik\Cache\Backend
 
     public function doDelete($id)
     {
-        $deleted = false;
-
         foreach ($this->backends as $backend) {
-            $deleted = $deleted || $backend->doDelete($id);
+            if ($backend->doContains($id)) {
+                $backend->doDelete($id);
+            }
         }
 
-        return $deleted;
+        return true;
     }
 
     public function doFlush()

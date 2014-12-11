@@ -31,7 +31,7 @@ class Factory
      */
     public static function buildCache($id)
     {
-        $cache = StaticContainer::getContainer()->get('Piwik\Cache');
+        $cache = StaticContainer::getContainer()->make('Piwik\Cache');
 
         if (!empty($id)) {
            $cache->setId($id);
@@ -51,7 +51,7 @@ class Factory
      */
     public static function buildMultiCache($id)
     {
-        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Multi');
+        $cache = StaticContainer::getContainer()->make('Piwik\Cache\Multi');
 
         if (!empty($id)) {
             $cache->setId($id);
