@@ -47,7 +47,7 @@ class Factory
      */
     public static function buildTransientCache($id = null)
     {
-        $backend = self::getCachedBackend('array', 'objectcache');
+        $backend = self::getBackend('array', 'objectcache');
         $cache   = StaticContainer::getContainer()->make('Piwik\Cache', array('backend' => $backend));
 
         if (!is_null($id)) {
@@ -62,7 +62,9 @@ class Factory
      * This comes handy for things that we need very often, nearly in every request. Instead of having to read eg.
      * a hundred caches from file we only load one file which contains the hundred keys. Should be used only for things
      * that we need very often (eg list of available plugin widgets classes) and only for cache entries that are not
-     * too large to keep loading and parsing the single cache entry fast.
+     * too large to keep loading and parsing the single cache entry fast. This cache is environment aware.
+     * If you invalidate a specific cache key it will be only invalidate for the current environment. Eg only tracker
+     * cache, or only web cache.
      *
      * @param $id
      * @return Multi
@@ -85,25 +87,17 @@ class Factory
         self::buildMultiCache()->flushAll();
     }
 
-    private static function getBackendOptions($backend)
-    {
-        $key = ucfirst($backend) . 'Cache';
-        $options = Config::getInstance()->$key;
-
-        return $options;
-    }
-
     /**
      * @param $backend
      * @param $namespace
      * @return Backend
      */
-    public static function getCachedBackend($backend, $namespace)
+    public static function getBackend($backend, $namespace = '')
     {
         $cacheKey = $backend . $namespace;
 
         if (!array_key_exists($cacheKey, self::$backends)) {
-            self::$backends[$cacheKey] = self::buildSpecificBackend($backend, $namespace);
+            self::$backends[$cacheKey] = self::buildSpecificBackend($backend);
         }
 
         return self::$backends[$cacheKey];
@@ -111,32 +105,33 @@ class Factory
 
     /**
      * @param string $type
-     * @param string $namespace
      * @return Backend
      */
-    private static function buildSpecificBackend($type, $namespace)
+    private static function buildSpecificBackend($type)
     {
-        $options = self::getBackendOptions($type);
-        $options['namespace'] = $namespace;
-
         switch ($type) {
             case 'array':
                 return new ArrayCache();
 
             case 'file':
-                $path  = StaticContainer::getContainer()->get('path.cache');
-                $path .= '/tracker/';
-
-                return StaticContainer::getContainer()->make('Piwik\Cache\Backend\File', array('directory' => $path));
+                return StaticContainer::getContainer()->make('Piwik\Cache\Backend\File');
 
             case 'chained':
-                return self::getChainedCache($options);
+
+                $options  = self::getBackendOptions($type);
+                $backends = array();
+                foreach ($options['backends'] as $backendToBuild) {
+                    $backends[] = self::buildSpecificBackend($backendToBuild);
+                }
+
+                return new Cache\Backend\Chained($backends);
 
             case 'null':
                 return new Cache\Backend\BlackHole();
 
             default:
                 $backend = null;
+                $options = self::getBackendOptions($type);
 
                 /**
                  * TODO document this event
@@ -152,14 +147,11 @@ class Factory
         }
     }
 
-    private static function getChainedCache($options)
+    private static function getBackendOptions($backend)
     {
-        $backends = array();
-        foreach ($options['backends'] as $backendToBuild) {
-            $backends[] = self::getCachedBackend($backendToBuild, $options['namespace']);
-        }
+        $key = ucfirst($backend) . 'Cache';
+        $options = Config::getInstance()->$key;
 
-        return new Cache\Backend\Chained($backends);
+        return $options;
     }
-
 }

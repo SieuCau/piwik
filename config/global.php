@@ -25,7 +25,7 @@ return array(
     'path.cache' => DI\factory(function (ContainerInterface $c) {
         $root = $c->get('path.tmp');
 
-        return $root . '/cache';
+        return $root . '/cache/tracker/';
     }),
 
     'cache.backend' => DI\factory(function (ContainerInterface $c) {
@@ -40,43 +40,34 @@ return array(
         return $backend;
     }),
 
-    'cache.namespace' => DI\factory(function (ContainerInterface $c) {
-        if (\Piwik\SettingsServer::isTrackerApiRequest()) {
-            $namespace = 'tracker';
-        } else {
-            $namespace = 'web';
-        }
-
-        return $namespace;
-    }),
-
-    'Piwik\Cache' => DI\object()->method('setNamespace', DI\link('cache.namespace')),
+    'Piwik\Cache' => DI\object(),
     'Piwik\Cache\Multi' => DI\factory(function (ContainerInterface $c) {
 
         if (!Multi::isPopulated()) {
-            $backend = $c->get('Piwik\Cache\Backend');
-            $mode    = $c->get('cache.namespace');
+            $type    = $c->get('cache.backend');
+            $backend = \Piwik\Cache\Factory::getBackend($type, 'multi');
 
             if (SettingsServer::isTrackerApiRequest()) {
                 $eventToPersist = 'Tracker.end';
+                $mode = 'tracker';
             } else {
                 $eventToPersist = 'Request.dispatch.end';
+                $mode = 'ui';
             }
 
-            Multi::populateCache($backend, $mode, $eventToPersist);
+            Multi::populateCache($backend, $mode);
+            \Piwik\Piwik::addAction($eventToPersist, function () use ($backend, $mode) {
+                Multi::persistCache($backend, $mode, 43200);
+            });
         }
 
-        $cache = new Multi();
-
-        return $cache;
+        return new Multi();
     }),
     'Piwik\Cache\Backend\File' => DI\object()->constructor(DI\link('path.cache')),
     'Piwik\Cache\Backend' => DI\factory(function (ContainerInterface $c) {
 
-        $backend   = $c->get('cache.backend');
-        $namespace = $c->get('cache.namespace');
-
-        $backend = \Piwik\Cache\Factory::getCachedBackend($backend, $namespace);
+        $type    = $c->get('cache.backend');
+        $backend = \Piwik\Cache\Factory::getBackend($type);
 
         return $backend;
     }),

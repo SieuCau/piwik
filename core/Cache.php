@@ -14,33 +14,21 @@ class Cache
 {
     private $backend;
     private $id;
-    private $namespace = '';
-    private $originalId;
 
     public function __construct(Backend $backend)
     {
         $this->backend = $backend;
     }
 
-    public function setNamespace($namespace)
-    {
-        $this->namespace = $namespace;
-
-        if (!is_null($this->originalId)) {
-            $this->generateCacheId($this->originalId);
-        }
-    }
-
     public function setId($id)
     {
         $this->checkId($id);
-        $this->originalId = $id;
         $this->generateCacheId($id);
     }
 
     private function generateCacheId($id)
     {
-        $this->id = sprintf('%s_%s', $this->namespace, $id);
+        $this->id = sprintf('piwikcache_%s', $id);
     }
 
     private function checkId($id)

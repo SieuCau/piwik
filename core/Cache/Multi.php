@@ -10,7 +10,6 @@ namespace Piwik\Cache;
 
 use Piwik\Cache;
 use Piwik\Cache\Backend;
-use Piwik\Piwik;
 use Piwik\Version;
 
 /**
@@ -20,10 +19,12 @@ use Piwik\Version;
  */
 class Multi
 {
+    /**
+     * @var Backend
+     */
+    private static $backend = null;
     private static $content = null;
     private static $isDirty = false;
-    private static $ttl = 43200;
-    private static $mode;
 
     private $id;
 
@@ -82,7 +83,12 @@ class Multi
      */
     public function flushAll()
     {
+        if (!is_null(self::$backend)) {
+            self::$backend->doFlush();
+        }
+
         self::$content = array();
+
         return true;
     }
 
@@ -91,36 +97,30 @@ class Multi
         return !is_null(self::$content);
     }
 
-    public static function populateCache(Backend $backend, $mode, $eventToSave)
+    public static function populateCache(Backend $backend, $mode)
     {
         self::$content = array();
-        self::$mode = $mode;
-
-        // TODO also save $backend to flush it in flushAll?
+        self::$backend = $backend;
 
         $content = $backend->doFetch(self::getCacheId($mode));
 
         if (is_array($content)) {
             self::$content = $content;
         }
-
-        Piwik::addAction($eventToSave, function () use ($backend) {
-            Multi::persistCache($backend);
-        });
     }
 
     private static function getCacheId($mode)
     {
-        return 'MultiCache-' . str_replace(array('.', '-'), '', Version::VERSION) . '-' . $mode;
+        return 'multicache-' . str_replace(array('.', '-'), '', Version::VERSION) . '-' . $mode;
     }
 
     /**
      * @ignore
      */
-    public static function persistCache(Backend $backend)
+    public static function persistCache(Backend $backend, $mode, $ttl)
     {
         if (self::$isDirty) {
-            $backend->doSave(self::getCacheId(self::$mode), self::$content, self::$ttl);
+            $backend->doSave(self::getCacheId($mode), self::$content, $ttl);
         }
     }
 
