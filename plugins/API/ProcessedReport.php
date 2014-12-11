@@ -156,7 +156,7 @@ class ProcessedReport
         // this huge method separately but that makes it also more complicated. leaving it like this for now.
         $key   = $this->buildReportMetadataCacheKey($idSites, $period, $date, $hideMetricsDoc, $showSubtableReports);
         $key   = CacheId::pluginAware($key);
-        $cache = CacheFactory::buildObjectCache($key);
+        $cache = CacheFactory::buildTransientCache($key);
 
         if ($cache->has()) {
             return $cache->get();

@@ -78,7 +78,8 @@ abstract class IntegrationTestCase extends SystemTestCase
             self::restoreDbTables(self::$tableData);
         }
 
-        CacheFactory::buildMultiCache(null)->flushAll();
+        CacheFactory::buildMultiCache()->flushAll();
+        CacheFactory::buildTransientCache()->flushAll();
     }
 
     /**

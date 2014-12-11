@@ -24,7 +24,7 @@ class MarketplaceApiClient
 
     public static function clearAllCacheEntries()
     {
-        $cache = Cache\Factory::buildCache(null);
+        $cache = Cache\Factory::buildPersistentCache();
         $cache->flushAll();
     }
 
@@ -157,7 +157,7 @@ class MarketplaceApiClient
     {
         $cacheKey = $this->getCacheKey($action, $query);
 
-        return Cache\Factory::buildCache($cacheKey);
+        return Cache\Factory::buildPersistentCache($cacheKey);
     }
 
     private function getCacheKey($action, $query)

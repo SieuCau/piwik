@@ -22,18 +22,17 @@ class Factory
      */
     private static $backends = array();
 
-    private static $fileCachePath;
-
     /**
+     * This cache will persist any set data in the configured backend.
      * @param $id
      * @return Cache
      * @throws \DI\NotFoundException
      */
-    public static function buildCache($id)
+    public static function buildPersistentCache($id = null)
     {
         $cache = StaticContainer::getContainer()->make('Piwik\Cache');
 
-        if (!empty($id)) {
+        if (!is_null($id)) {
            $cache->setId($id);
         }
 
@@ -41,15 +40,17 @@ class Factory
     }
 
     /**
+     * This cache will not persist any data it contains. It will be only cached during one request. While the persistent
+     * cache cannot cache objects this one can cache any kind of data.
      * @param $id
      * @return Cache
      */
-    public static function buildObjectCache($id)
+    public static function buildTransientCache($id = null)
     {
         $backend = self::getCachedBackend('array', 'objectcache');
-        $cache = new Cache($backend);
+        $cache   = StaticContainer::getContainer()->make('Piwik\Cache', array('backend' => $backend));
 
-        if (!empty($id)) {
+        if (!is_null($id)) {
            $cache->setId($id);
         }
 
@@ -63,13 +64,14 @@ class Factory
      * that we need very often (eg list of available plugin widgets classes) and only for cache entries that are not
      * too large to keep loading and parsing the single cache entry fast.
      *
+     * @param $id
      * @return Multi
      */
-    public static function buildMultiCache($id)
+    public static function buildMultiCache($id = null)
     {
         $cache = StaticContainer::getContainer()->make('Piwik\Cache\Multi');
 
-        if (!empty($id)) {
+        if (!is_null($id)) {
             $cache->setId($id);
         }
 
@@ -78,9 +80,9 @@ class Factory
 
     public static function flushAll()
     {
-        $backend = StaticContainer::getContainer()->get('Piwik\Cache\Backend');
-        $backend->doFlush();
-        self::buildMultiCache(null)->flushAll();
+        self::buildPersistentCache()->flushAll();
+        self::buildTransientCache()->flushAll();
+        self::buildMultiCache()->flushAll();
     }
 
     private static function getBackendOptions($backend)
@@ -122,7 +124,10 @@ class Factory
                 return new ArrayCache();
 
             case 'file':
-                return self::getFileCache($options);
+                $path  = StaticContainer::getContainer()->get('path.cache');
+                $path .= '/' . $namespace . '/';
+
+                return StaticContainer::getContainer()->make('Piwik\Cache\Backend\File', array('directory' => $path));
 
             case 'chained':
                 return self::getChainedCache($options);
@@ -145,27 +150,6 @@ class Factory
 
                 throw new \InvalidArgumentException("Cache backend $type not valid");
         }
-    }
-
-    private static function getCachePath()
-    {
-        if (is_null(self::$fileCachePath)) {
-            $tmp = StaticContainer::getContainer()->get('path.tmp');
-            self::$fileCachePath = $tmp . '/cache/';
-        }
-
-        return self::$fileCachePath;
-    }
-
-    private static function getFileCache($options)
-    {
-        $path = self::getCachePath();
-
-        if (!empty($options['namespace'])) {
-            $path .= $options['namespace'] . '/';
-        }
-
-        return new File($path);
     }
 
     private static function getChainedCache($options)

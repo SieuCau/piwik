@@ -572,6 +572,6 @@ class API extends \Piwik\Plugin\API
     {
         $cacheId = CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
 
-        return CacheFactory::buildObjectCache($cacheId);
+        return CacheFactory::buildTransientCache($cacheId);
     }
 }

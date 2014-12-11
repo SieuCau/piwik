@@ -296,7 +296,7 @@ abstract class VisitDimension extends Dimension
     public static function getAllDimensions()
     {
         $cacheId = CacheId::pluginAware('VisitDimensions');
-        $cache   = CacheFactory::buildObjectCache($cacheId);
+        $cache   = CacheFactory::buildTransientCache($cacheId);
 
         if (!$cache->has()) {
 

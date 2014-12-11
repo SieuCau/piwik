@@ -244,7 +244,7 @@ class Fixture extends \PHPUnit_Framework_Assert
         $this->getTestEnvironment()->executeSetupTestEnvHook();
         Piwik_TestingEnvironment::addSendMailHook();
 
-        CacheFactory::buildMultiCache(null)->flushAll();
+        CacheFactory::buildMultiCache()->flushAll();
 
         if ($this->overwriteExisting
             || !$this->isFixtureSetUp()
@@ -304,7 +304,8 @@ class Fixture extends \PHPUnit_Framework_Assert
         Option::clearCache();
         Site::clearCache();
         Cache::deleteTrackerCache();
-        CacheFactory::buildMultiCache(null)->flushAll();
+        CacheFactory::buildTransientCache()->flushAll();
+        CacheFactory::buildMultiCache()->flushAll();
         Config::getInstance()->clear();
         ArchiveTableCreator::clear();
         \Piwik\Plugins\ScheduledReports\API::$cache = array();

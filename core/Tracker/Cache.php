@@ -41,7 +41,7 @@ class Cache
     private static function getGeneralCache()
     {
         if (is_null(self::$generalCache)) {
-            self::$generalCache = CacheFactory::buildCache('general');
+            self::$generalCache = CacheFactory::buildPersistentCache('general');
         }
 
         return self::$generalCache;
@@ -53,7 +53,7 @@ class Cache
     private static function getIdSiteCache($idSite)
     {
         if (!array_key_exists($idSite, self::$idSiteCache)) {
-            self::$idSiteCache[$idSite] = CacheFactory::buildCache($idSite);
+            self::$idSiteCache[$idSite] = CacheFactory::buildPersistentCache($idSite);
         }
 
         return self::$idSiteCache[$idSite];

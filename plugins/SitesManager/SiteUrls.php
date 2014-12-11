@@ -50,6 +50,6 @@ class SiteUrls
 
     private static function getCache()
     {
-        return Cache\Factory::buildCache('allSiteUrlsPerSite');
+        return Cache\Factory::buildPersistentCache('allSiteUrlsPerSite');
     }
 }

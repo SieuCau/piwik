@@ -39,7 +39,7 @@ class ApiTest extends SystemTestCase
     {
         parent::setUp();
 
-        CacheFactory::buildObjectCache(null)->flushAll();
+        CacheFactory::flushAll();
 
         Translate::reloadLanguage('en');
         $this->api = API::getInstance();

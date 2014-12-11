@@ -157,7 +157,7 @@ abstract class ConversionDimension extends Dimension
     public static function getAllDimensions()
     {
         $cacheId = CacheId::pluginAware('ConversionDimensions');
-        $cache   = CacheFactory::buildObjectCache($cacheId);
+        $cache   = CacheFactory::buildTransientCache($cacheId);
 
         if (!$cache->has()) {
 

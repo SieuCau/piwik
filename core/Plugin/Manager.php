@@ -84,7 +84,8 @@ class Manager extends Singleton
         'ExampleVisualization',
         'ExamplePluginTemplate',
         'ExampleTracker',
-        'ExampleReport'
+        'ExampleReport',
+        'CacheProvider'
     );
 
     // Themes bundled with core package, disabled by default
@@ -707,12 +708,12 @@ class Manager extends Singleton
             $cacheKey .= '-' . md5(implode('', $this->getLoadedPluginsName()));
         }
 
-        $cache = Cache\Factory::buildCache($cacheKey);
+        $cache = Cache\Factory::buildPersistentCache($cacheKey);
         $translations = $cache->get();
 
         if (!empty($translations) &&
             is_array($translations) &&
-            !Development::isEnabled()) {
+            !Development::isEnabled()) { // TODO remove this one here once we have environments in DI
 
             Translate::mergeTranslationArray($translations);
             return;

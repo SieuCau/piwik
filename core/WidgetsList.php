@@ -277,6 +277,6 @@ class WidgetsList extends Singleton
     private static function getCacheForCompleteList()
     {
         $cacheId = CacheId::pluginAware('WidgetsList');
-        return CacheFactory::buildObjectCache($cacheId);
+        return CacheFactory::buildTransientCache($cacheId);
     }
 }
