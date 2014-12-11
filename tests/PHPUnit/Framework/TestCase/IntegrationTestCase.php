@@ -11,6 +11,7 @@ namespace Piwik\Tests\Framework\TestCase;
 use Piwik\Config;
 use Piwik\Db;
 use Piwik\Tests\Framework\Fixture;
+use Piwik\Cache\Factory as CacheFactory;
 
 /**
  * Tests extending IntegrationTestCase are much slower to run: the setUp will
@@ -76,6 +77,8 @@ abstract class IntegrationTestCase extends SystemTestCase
         if (!empty(self::$tableData)) {
             self::restoreDbTables(self::$tableData);
         }
+
+        CacheFactory::buildMultiCache(null)->flushAll();
     }
 
     /**

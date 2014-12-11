@@ -41,6 +41,22 @@ class Factory
     }
 
     /**
+     * @param $id
+     * @return Cache
+     */
+    public static function buildObjectCache($id)
+    {
+        $backend = self::getCachedBackend('array', 'objectcache');
+        $cache = new Cache($backend);
+
+        if (!empty($id)) {
+           $cache->setId($id);
+        }
+
+        return $cache;
+    }
+
+    /**
      * Maybe we can find a better name for this cache. This cache saves multiple cache entries under one cache entry.
      * This comes handy for things that we need very often, nearly in every request. Instead of having to read eg.
      * a hundred caches from file we only load one file which contains the hundred keys. Should be used only for things

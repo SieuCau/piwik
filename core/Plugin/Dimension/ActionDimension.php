@@ -214,7 +214,7 @@ abstract class ActionDimension extends Dimension
     public static function getAllDimensions()
     {
         $cacheId = CacheId::pluginAware('ActionDimensions');
-        $cache   = CacheFactory::buildMultiCache($cacheId);
+        $cache   = CacheFactory::buildObjectCache($cacheId);
 
         if (!$cache->has()) {
 

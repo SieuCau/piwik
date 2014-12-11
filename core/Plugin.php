@@ -8,7 +8,6 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\Prepopulated;
 use Piwik\Plugin\Dependency;
 use Piwik\Plugin\MetadataLoader;
 

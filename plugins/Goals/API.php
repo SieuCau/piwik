@@ -207,7 +207,7 @@ class API extends \Piwik\Plugin\API
         $this->getModel()->deleteGoal($idSite, $idGoal);
         $this->getModel()->deleteGoalConversions($idSite, $idGoal);
 
-        $this->getGoalsInfoStaticCache($idSite)->clear();
+        $this->getGoalsInfoStaticCache($idSite)->flushAll();
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
     }
@@ -572,6 +572,6 @@ class API extends \Piwik\Plugin\API
     {
         $cacheId = CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
 
-        return CacheFactory::buildMultiCache($cacheId);
+        return CacheFactory::buildObjectCache($cacheId);
     }
 }

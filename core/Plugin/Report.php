@@ -736,8 +736,8 @@ class Report
     public static function getAllReports()
     {
         $reports = self::getAllReportClasses();
-        $cacheId = CacheId::languageAware('Reports' . implode('', $reports));
-        $cache   = CacheFactory::buildMultiCache($cacheId);
+        $cacheId = CacheId::languageAware('Reports' . md5(implode('', $reports)));
+        $cache   = CacheFactory::buildObjectCache($cacheId);
 
         if (!$cache->has()) {
             $instances = array();

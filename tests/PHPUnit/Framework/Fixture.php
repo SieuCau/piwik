@@ -9,6 +9,7 @@ namespace Piwik\Tests\Framework;
 
 use Piwik\Access;
 use Piwik\Cache\Backend\File;
+use Piwik\Cache\Factory as CacheFactory;
 use Piwik\Common;
 use Piwik\Config;
 use Piwik\DataAccess\ArchiveTableCreator;
@@ -243,6 +244,8 @@ class Fixture extends \PHPUnit_Framework_Assert
         $this->getTestEnvironment()->executeSetupTestEnvHook();
         Piwik_TestingEnvironment::addSendMailHook();
 
+        CacheFactory::buildMultiCache(null)->flushAll();
+
         if ($this->overwriteExisting
             || !$this->isFixtureSetUp()
         ) {
@@ -301,6 +304,7 @@ class Fixture extends \PHPUnit_Framework_Assert
         Option::clearCache();
         Site::clearCache();
         Cache::deleteTrackerCache();
+        CacheFactory::buildMultiCache(null)->flushAll();
         Config::getInstance()->clear();
         ArchiveTableCreator::clear();
         \Piwik\Plugins\ScheduledReports\API::$cache = array();
