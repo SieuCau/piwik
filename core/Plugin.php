@@ -108,10 +108,10 @@ class Plugin
 
     /**
      * As the cache is used quite often we avoid having to create instances all the time. We reuse it which is not
-     * perfect but efficient. If the cache is used we need to make sure to call setCacheKey() before usage as there
+     * perfect but efficient. If the cache is used we need to make sure to call setId() before usage as there
      * is maybe a different key set since last usage.
      *
-     * @var Prepopulated
+     * @var \Piwik\Cache
      */
     private $cache;
 
@@ -320,7 +320,7 @@ class Plugin
     {
         $this->createCacheIfNeeded();
 
-        $this->cache->setCacheKey('Plugin' . $this->pluginName . $componentName . $expectedSubclass);
+        $this->cache->setId('Plugin' . $this->pluginName . $componentName . $expectedSubclass);
 
         $componentFile = sprintf('%s/plugins/%s/%s.php', PIWIK_INCLUDE_PATH, $this->pluginName, $componentName);
 
@@ -366,7 +366,7 @@ class Plugin
     {
         $this->createCacheIfNeeded();
 
-        $this->cache->setCacheKey('Plugin' . $this->pluginName . $directoryWithinPlugin . $expectedSubclass);
+        $this->cache->setId('Plugin' . $this->pluginName . $directoryWithinPlugin . $expectedSubclass);
 
         if ($this->cache->has()) {
             $components = $this->cache->get();

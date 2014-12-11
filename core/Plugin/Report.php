@@ -787,10 +787,10 @@ class Report
 
         foreach ($metricsToTranslate as $metric) {
             if ($metric instanceof Metric) {
-                $metricName = $metric->getName();
+                $metricName  = $metric->getName();
                 $translation = $metric->getTranslatedName();
             } else {
-                $metricName = $metric;
+                $metricName  = $metric;
                 $translation = @$translations[$metric];
             }
 

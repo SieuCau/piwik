@@ -10,9 +10,7 @@ namespace Piwik\Cache;
 
 use Piwik\Cache;
 use Piwik\Cache\Backend;
-use Piwik\Development;
 use Piwik\Piwik;
-use Piwik\SettingsServer;
 use Piwik\Version;
 
 /**
@@ -25,22 +23,9 @@ class Multi
     private static $content = null;
     private static $isDirty = false;
     private static $ttl = 43200;
+    private static $mode;
 
-    /**
-     * @var Backend
-     */
-    private $backend;
     private $id;
-
-    public function __construct(Backend $backend)
-    {
-        $this->backend = $backend;
-
-        if (is_null(self::$content)) {
-            self::$content = array();
-            $this->populateCache();
-        }
-    }
 
     public function setId($id)
     {
@@ -97,55 +82,45 @@ class Multi
      */
     public function flushAll()
     {
-        $this->backend->doDelete(self::getCacheId());
         self::$content = array();
         return true;
     }
 
-    private function populateCache()
+    public static function isPopulated()
     {
-        if (Development::isEnabled()) { // Todo in DI shoud be set "null" cache
-            return;
-        }
+        return !is_null(self::$content);
+    }
 
-        $content = $this->backend->doFetch(self::getCacheId());
+    public static function populateCache(Backend $backend, $mode, $eventToSave)
+    {
+        self::$content = array();
+        self::$mode = $mode;
+
+        // TODO also save $backend to flush it in flushAll?
+
+        $content = $backend->doFetch(self::getCacheId($mode));
 
         if (is_array($content)) {
             self::$content = $content;
         }
 
-        // TODO needs to be done in DI
-        if (SettingsServer::isTrackerApiRequest()) {
-            $eventToPersist = 'Tracker.end';
-        } else {
-            $eventToPersist = 'Request.dispatch.end';
-        }
-
-        $self = $this;
-        Piwik::addAction($eventToPersist, function () use ($self) {
-            $self->persistCache();
+        Piwik::addAction($eventToSave, function () use ($backend) {
+            Multi::persistCache($backend);
         });
     }
 
-    private static function getCacheId()
+    private static function getCacheId($mode)
     {
-        if (SettingsServer::isTrackerApiRequest()) {
-            // TODO needs to be done in DI
-            $mode = '-tracker';
-        } else {
-            $mode = '-ui';
-        }
-
-        return 'MultiCache-' . str_replace(array('.', '-'), '', Version::VERSION) . $mode;
+        return 'MultiCache-' . str_replace(array('.', '-'), '', Version::VERSION) . '-' . $mode;
     }
 
     /**
      * @ignore
      */
-    public function persistCache()
+    public static function persistCache(Backend $backend)
     {
         if (self::$isDirty) {
-            $this->backend->doSave(self::getCacheId(), self::$content, self::$ttl);
+            $backend->doSave(self::getCacheId(self::$mode), self::$content, self::$ttl);
         }
     }
 

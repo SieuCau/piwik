@@ -271,7 +271,7 @@ class WidgetsList extends Singleton
     {
         self::$widgets    = array();
         self::$hookCalled = false;
-        self::getCacheForCompleteList()->clear();
+        self::getCacheForCompleteList()->flushAll();
     }
 
     private static function getCacheForCompleteList()

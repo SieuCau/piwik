@@ -24,11 +24,14 @@ class Factory
 
     private static $fileCachePath;
 
+    /**
+     * @param $id
+     * @return Cache
+     * @throws \DI\NotFoundException
+     */
     public static function buildCache($id)
     {
-        $backend = self::buildBackend();
-
-        $cache = new Cache($backend);
+        $cache = StaticContainer::getContainer()->get('Piwik\Cache');
 
         if (!empty($id)) {
            $cache->setId($id);
@@ -37,25 +40,18 @@ class Factory
         return $cache;
     }
 
-    public static function buildBackend()
-    {
-        $options = self::getCacheOptions();
-        // TODO namespace should be set in DI
-
-        return self::getCachedBackend($options['backend'], $options);
-    }
-
     /**
      * Maybe we can find a better name for this cache. This cache saves multiple cache entries under one cache entry.
      * This comes handy for things that we need very often, nearly in every request. Instead of having to read eg.
      * a hundred caches from file we only load one file which contains the hundred keys. Should be used only for things
      * that we need very often (eg list of available plugin widgets classes) and only for cache entries that are not
      * too large to keep loading and parsing the single cache entry fast.
+     *
+     * @return Multi
      */
     public static function buildMultiCache($id)
     {
-        $backend = self::buildBackend();
-        $cache   = new Multi($backend);
+        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Multi');
 
         if (!empty($id)) {
             $cache->setId($id);
@@ -66,55 +62,46 @@ class Factory
 
     public static function flushAll()
     {
-        self::buildBackend()->doFlush();
+        $backend = StaticContainer::getContainer()->get('Piwik\Cache\Backend');
+        $backend->doFlush();
         self::buildMultiCache(null)->flushAll();
     }
 
-    private static function getCacheOptions()
-    {
-        // TODO default options should be set in DI
-        $config  = Config::getInstance()->cache;
-        $options = array_merge(array('namespace' => 'tracker'), $config);
-
-        return $options;
-    }
-
-    private static function getBackendOptions($backend, $options)
+    private static function getBackendOptions($backend)
     {
         $key = ucfirst($backend) . 'Cache';
-        $backendOptions = Config::getInstance()->$key;
-
-        if (!empty($backendOptions)) {
-            $options = array_merge($backendOptions, $options); // we need to forward namespace...
-        }
+        $options = Config::getInstance()->$key;
 
         return $options;
     }
 
     /**
      * @param $backend
-     * @param array $options
+     * @param $namespace
      * @return Backend
      */
-    private static function getCachedBackend($backend, $options)
+    public static function getCachedBackend($backend, $namespace)
     {
-        if (!array_key_exists($backend, self::$backends)) {
-            self::$backends[$backend] = self::buildSpecificBackend($backend, $options);
+        $cacheKey = $backend . $namespace;
+
+        if (!array_key_exists($cacheKey, self::$backends)) {
+            self::$backends[$cacheKey] = self::buildSpecificBackend($backend, $namespace);
         }
 
-        return self::$backends[$backend];
+        return self::$backends[$cacheKey];
     }
 
     /**
-     * @param $backend
-     * @param array $options
+     * @param string $type
+     * @param string $namespace
      * @return Backend
      */
-    private static function buildSpecificBackend($backend, $options = array())
+    private static function buildSpecificBackend($type, $namespace)
     {
-        $options = self::getBackendOptions($backend, $options);
+        $options = self::getBackendOptions($type);
+        $options['namespace'] = $namespace;
 
-        switch ($backend) {
+        switch ($type) {
             case 'array':
                 return new ArrayCache();
 
@@ -128,7 +115,6 @@ class Factory
                 return new Cache\Backend\BlackHole();
 
             default:
-                $type    = $backend;
                 $backend = null;
 
                 /**
@@ -141,7 +127,7 @@ class Factory
                     return $backend;
                 }
 
-                throw new \InvalidArgumentException("Cache backend $backend not valid");
+                throw new \InvalidArgumentException("Cache backend $type not valid");
         }
     }
 
@@ -170,7 +156,7 @@ class Factory
     {
         $backends = array();
         foreach ($options['backends'] as $backendToBuild) {
-            $backends[] = self::getCachedBackend($backendToBuild, $options);
+            $backends[] = self::getCachedBackend($backendToBuild, $options['namespace']);
         }
 
         return new Cache\Backend\Chained($backends);

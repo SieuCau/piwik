@@ -9,7 +9,7 @@
 
 namespace Piwik\Tracker;
 
-use Piwik\Cache\Prepopulated;
+use Piwik\Cache\Multi;
 use Piwik\Settings\Storage;
 use Piwik\Tracker;
 use Piwik\Cache\Factory as CacheFactory;
@@ -42,13 +42,18 @@ class SettingsStorage extends Storage
 
     private function getCache()
     {
-        return CacheFactory::buildMultiCache($this->getOptionKey());
+        return self::buildCache($this->getOptionKey());
     }
 
     public static function clearCache()
     {
         Cache::deleteTrackerCache();
-        Prepopulated::_reset();
+        self::buildCache(null)->flushAll();
+    }
+
+    private static function buildCache($cacheKey)
+    {
+        return CacheFactory::buildMultiCache($cacheKey);
     }
 
 }

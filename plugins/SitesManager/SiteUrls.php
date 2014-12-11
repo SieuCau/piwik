@@ -9,7 +9,6 @@
 namespace Piwik\Plugins\SitesManager;
 
 use Piwik\Cache;
-use Piwik\Development;
 
 class SiteUrls
 {
@@ -23,7 +22,7 @@ class SiteUrls
         $cache    = $this->getCache();
         $siteUrls = $cache->get();
 
-        if (empty($siteUrls) || Development::isEnabled()) {
+        if (empty($siteUrls)) {
             $siteUrls = $this->getAllSiteUrls();
             $cache->set($siteUrls, 1800);
         }
