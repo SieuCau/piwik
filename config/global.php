@@ -50,12 +50,12 @@ return array(
         return $namespace;
     }),
 
-    'Piwik\Cache' => DI\object(),
+    'Piwik\Cache' => DI\object()->method('setNamespace', DI\link('cache.namespace')),
     'Piwik\Cache\Multi' => DI\factory(function (ContainerInterface $c) {
 
         if (!Multi::isPopulated()) {
-            $backend   = $c->get('Piwik\Cache\Backend');
-            $namespace = $c->get('cache.namespace');
+            $backend = $c->get('Piwik\Cache\Backend');
+            $mode    = $c->get('cache.namespace');
 
             if (SettingsServer::isTrackerApiRequest()) {
                 $eventToPersist = 'Tracker.end';
@@ -63,7 +63,7 @@ return array(
                 $eventToPersist = 'Request.dispatch.end';
             }
 
-            Multi::populateCache($backend, $namespace, $eventToPersist);
+            Multi::populateCache($backend, $mode, $eventToPersist);
         }
 
         $cache = new Multi();

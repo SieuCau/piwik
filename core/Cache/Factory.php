@@ -125,7 +125,7 @@ class Factory
 
             case 'file':
                 $path  = StaticContainer::getContainer()->get('path.cache');
-                $path .= '/' . $namespace . '/';
+                $path .= '/tracker/';
 
                 return StaticContainer::getContainer()->make('Piwik\Cache\Backend\File', array('directory' => $path));
 

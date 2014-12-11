@@ -75,7 +75,6 @@ class File extends PhpFileCache implements Backend
 
     public function doFlush()
     {
-        // TODO we should invalidate all caches also from tracker and whatsoeover
         $self = $this;
         $beforeUnlink = function ($path) use ($self) {
             $self->opCacheInvalidate($path);

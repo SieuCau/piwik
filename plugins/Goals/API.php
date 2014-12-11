@@ -120,7 +120,7 @@ class API extends \Piwik\Plugin\API
 
         $idGoal = $this->getModel()->createGoalForSite($idSite, $goal);
 
-        $this->getGoalsInfoStaticCache($idSite)->flushAll();
+        $this->getGoalsInfoStaticCache($idSite)->delete();
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
         return $idGoal;
@@ -167,7 +167,7 @@ class API extends \Piwik\Plugin\API
             'revenue'         => $revenue,
         ));
 
-        $this->getGoalsInfoStaticCache($idSite)->flushAll();
+        $this->getGoalsInfoStaticCache($idSite)->delete();
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
     }
@@ -207,7 +207,7 @@ class API extends \Piwik\Plugin\API
         $this->getModel()->deleteGoal($idSite, $idGoal);
         $this->getModel()->deleteGoalConversions($idSite, $idGoal);
 
-        $this->getGoalsInfoStaticCache($idSite)->flushAll();
+        $this->getGoalsInfoStaticCache($idSite)->delete();
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
     }

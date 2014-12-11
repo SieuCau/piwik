@@ -14,16 +14,33 @@ class Cache
 {
     private $backend;
     private $id;
+    private $namespace = '';
+    private $originalId;
 
     public function __construct(Backend $backend)
     {
         $this->backend = $backend;
     }
 
+    public function setNamespace($namespace)
+    {
+        $this->namespace = $namespace;
+
+        if (!is_null($this->originalId)) {
+            $this->generateCacheId($this->originalId);
+        }
+    }
+
     public function setId($id)
     {
         $this->checkId($id);
-        $this->id = $this->completeKey($id);
+        $this->originalId = $id;
+        $this->generateCacheId($id);
+    }
+
+    private function generateCacheId($id)
+    {
+        $this->id = sprintf('%s_%s', $this->namespace, $id);
     }
 
     private function checkId($id)
@@ -35,18 +52,6 @@ class Cache
         if (!Filesystem::isValidFilename($id)) {
             throw new \Exception("Invalid cache ID request $id");
         }
-    }
-
-    /**
-     * Prefixes the passed id with the configured namespace value.
-     *
-     * @param string $id The id to namespace.
-     *
-     * @return string The namespaced id.
-     */
-    protected function completeKey($id)
-    {
-        return sprintf('piwikcache_%s', $id);
     }
 
     /**
