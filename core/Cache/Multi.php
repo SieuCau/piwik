@@ -17,14 +17,57 @@ use Piwik\Version;
  *
  * This cache uses one file for all keys. We will load the cache file only once.
  */
-class Multi extends Transient
+class Multi
 {
     /**
      * @var Backend
      */
-    private static $backend = null;
-    private static $isDirty = false;
-    protected static $content = null;
+    private $storage = null;
+    private $content = null;
+    private $isDirty = false;
+
+    /**
+     * Get the content related to the current cache key. Make sure to call the method {@link has()} to verify whether
+     * there is actually any content set under this cache key.
+     * @return mixed
+     */
+    public function get($id)
+    {
+        return $this->content[$id];
+    }
+
+    /**
+     * Check whether any content was actually stored for the current cache key.
+     * @return bool
+     */
+    public function has($id)
+    {
+        return array_key_exists($id, $this->content);
+    }
+
+    /**
+     * Set (overwrite) any content related to the current set cache key.
+     * @param $content
+     * @return boolean
+     */
+    public function set($id, $content)
+    {
+        $this->content[$id] = $content;
+        $this->isDirty = true;
+        return true;
+    }
+
+    /**
+     * Deletes a cache entry.
+     *
+     * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
+     */
+    public function delete($id)
+    {
+        if ($this->has($id)) {
+            unset($this->content[$id]);
+        }
+    }
 
     /**
      * Flushes all cache entries.
@@ -33,31 +76,33 @@ class Multi extends Transient
      */
     public function flushAll()
     {
-        if (!is_null(self::$backend)) {
-            self::$backend->doFlush();
+        if (!is_null($this->storage)) {
+            $this->storage->doFlush();
         }
 
-        return parent::flushAll();
+        $this->content = array();
+
+        return true;
     }
 
-    public static function isPopulated()
+    public function isPopulated()
     {
-        return !is_null(self::$content);
+        return !is_null($this->content);
     }
 
-    public static function populateCache(Backend $backend, $mode)
+    public function populateCache(Backend $storage, $mode)
     {
-        self::$content = array();
-        self::$backend = $backend;
+        $this->content = array();
+        $this->storage = $storage;
 
-        $content = $backend->doFetch(self::getCacheId($mode));
+        $content = $storage->doFetch($this->getCacheId($mode));
 
         if (is_array($content)) {
-            self::$content = $content;
+            $this->content = $content;
         }
     }
 
-    private static function getCacheId($mode)
+    private function getCacheId($mode)
     {
         return 'multicache-' . str_replace(array('.', '-'), '', Version::VERSION) . '-' . $mode;
     }
@@ -65,10 +110,10 @@ class Multi extends Transient
     /**
      * @ignore
      */
-    public static function persistCache(Backend $backend, $mode, $ttl)
+    public function persistCache(Backend $storage, $mode, $ttl)
     {
-        if (self::$isDirty) {
-            $backend->doSave(self::getCacheId($mode), self::$content, $ttl);
+        if ($this->isDirty) {
+            $storage->doSave($this->getCacheId($mode), $this->content, $ttl);
         }
     }
 

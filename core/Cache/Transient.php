@@ -16,7 +16,15 @@ use Piwik\Cache\Backend;
  */
 class Transient
 {
-    protected static $content = array();
+    /**
+     * @var Backend
+     */
+    private $backend;
+
+    public function __construct(Backend $backend)
+    {
+        $this->backend = $backend;
+    }
 
     /**
      * Get the content related to the current cache key. Make sure to call the method {@link has()} to verify whether
@@ -25,7 +33,7 @@ class Transient
      */
     public function get($id)
     {
-        return self::$content[$id];
+        return $this->backend->doFetch($id);
     }
 
     /**
@@ -34,7 +42,7 @@ class Transient
      */
     public function has($id)
     {
-        return array_key_exists($id, self::$content);
+        return $this->backend->doContains($id);
     }
 
     /**
@@ -44,8 +52,7 @@ class Transient
      */
     public function set($id, $content)
     {
-        self::$content[$id] = $content;
-        return true;
+        return $this->backend->doSave($id, $content);
     }
 
     /**
@@ -55,12 +62,7 @@ class Transient
      */
     public function delete($id)
     {
-        if ($this->has($id)) {
-            unset(self::$content[$id]);
-            return true;
-        }
-
-        return false;
+        return $this->backend->doDelete($id);
     }
 
     /**
@@ -70,9 +72,7 @@ class Transient
      */
     public function flushAll()
     {
-        self::$content = array();
-
-        return true;
+        return $this->backend->doFlush();
     }
 
 }

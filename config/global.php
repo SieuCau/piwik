@@ -2,6 +2,7 @@
 
 use Interop\Container\ContainerInterface;
 use Piwik\Cache\Multi;
+use Piwik\Cache\Transient;
 use Piwik\SettingsServer;
 
 return array(
@@ -39,14 +40,20 @@ return array(
 
         return $backend;
     }),
-
     'Piwik\Cache' => DI\object(),
-    'Piwik\Cache\Transient' => DI\object(),
+    'Piwik\Cache\Transient' => DI\factory(function (ContainerInterface $c) {
+
+        $backend = \Piwik\Cache\Factory::buildBackend('array');
+
+        return new Transient($backend);
+    }),
     'Piwik\Cache\Multi' => DI\factory(function (ContainerInterface $c) {
 
-        if (!Multi::isPopulated()) {
+        $multi = new Multi();
+
+        if (!$multi->isPopulated()) {
             $type    = $c->get('cache.backend');
-            $backend = \Piwik\Cache\Factory::getBackend($type, 'multi');
+            $backend = \Piwik\Cache\Factory::buildBackend($type);
 
             if (SettingsServer::isTrackerApiRequest()) {
                 $eventToPersist = 'Tracker.end';
@@ -56,19 +63,19 @@ return array(
                 $mode = 'ui';
             }
 
-            Multi::populateCache($backend, $mode);
-            \Piwik\Piwik::addAction($eventToPersist, function () use ($backend, $mode) {
-                Multi::persistCache($backend, $mode, 43200);
+            $multi->populateCache($backend, $mode);
+            \Piwik\Piwik::addAction($eventToPersist, function () use ($multi, $backend, $mode) {
+                $multi->persistCache($backend, $mode, 43200);
             });
         }
 
-        return new Multi();
+        return $multi;
     }),
     'Piwik\Cache\Backend\File' => DI\object()->constructor(DI\link('path.cache')),
     'Piwik\Cache\Backend' => DI\factory(function (ContainerInterface $c) {
 
         $type    = $c->get('cache.backend');
-        $backend = \Piwik\Cache\Factory::getBackend($type);
+        $backend = \Piwik\Cache\Factory::buildBackend($type);
 
         return $backend;
     }),

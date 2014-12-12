@@ -16,10 +16,6 @@ use Piwik\Piwik;
 
 class Factory
 {
-    /**
-     * @var Backend[]
-     */
-    private static $backends = array();
 
     /**
      * This cache will persist any set data in the configured backend.
@@ -28,22 +24,17 @@ class Factory
      */
     public static function buildPersistentCache()
     {
-        $cache = StaticContainer::getContainer()->get('Piwik\Cache');
-
-        return $cache;
+        return StaticContainer::getContainer()->get('Piwik\Cache');
     }
 
     /**
      * This cache will not persist any data it contains. It will be only cached during one request. While the persistent
      * cache cannot cache objects this one can cache any kind of data.
-     * @param $id
-     * @return Cache
+     * @return Cache\Transient
      */
     public static function buildTransientCache()
     {
-        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Transient');
-
-        return $cache;
+        return StaticContainer::getContainer()->get('Piwik\Cache\Transient');
     }
 
     /**
@@ -59,9 +50,7 @@ class Factory
      */
     public static function buildMultiCache()
     {
-        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Multi');
-
-        return $cache;
+        return StaticContainer::getContainer()->get('Piwik\Cache\Multi');
     }
 
     public static function flushAll()
@@ -72,23 +61,10 @@ class Factory
     }
 
     /**
-     * @param $backend
+     * @param $type
      * @return Backend
      */
-    public static function getBackend($backend)
-    {
-        if (!array_key_exists($backend, self::$backends)) {
-            self::$backends[$backend] = self::buildSpecificBackend($backend);
-        }
-
-        return self::$backends[$backend];
-    }
-
-    /**
-     * @param string $type
-     * @return Backend
-     */
-    private static function buildSpecificBackend($type)
+    public static function buildBackend($type)
     {
         switch ($type) {
             case 'array':
@@ -102,7 +78,7 @@ class Factory
                 $options  = self::getBackendOptions($type);
                 $backends = array();
                 foreach ($options['backends'] as $backendToBuild) {
-                    $backends[] = self::buildSpecificBackend($backendToBuild);
+                    $backends[] = self::buildBackend($backendToBuild);
                 }
 
                 return new Cache\Backend\Chained($backends);
