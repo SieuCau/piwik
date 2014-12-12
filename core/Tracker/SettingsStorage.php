@@ -21,14 +21,15 @@ class SettingsStorage extends Storage
 {
     protected function loadSettings()
     {
+        $cacheId = $this->getOptionKey();
         $cache = $this->getCache();
 
-        if ($cache->has()) {
-            $settings = $cache->get();
+        if ($cache->has($cacheId)) {
+            $settings = $cache->get($cacheId);
         } else {
             $settings = parent::loadSettings();
 
-            $cache->set($settings);
+            $cache->set($cacheId, $settings);
         }
 
         return $settings;
@@ -48,12 +49,12 @@ class SettingsStorage extends Storage
     public static function clearCache()
     {
         Cache::deleteTrackerCache();
-        self::buildCache(null)->flushAll();
+        self::buildCache()->flushAll();
     }
 
-    private static function buildCache($cacheKey)
+    private static function buildCache()
     {
-        return CacheFactory::buildMultiCache($cacheKey);
+        return CacheFactory::buildMultiCache();
     }
 
 }

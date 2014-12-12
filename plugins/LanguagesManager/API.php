@@ -272,10 +272,11 @@ class API extends \Piwik\Plugin\API
             return;
         }
 
-        $cache = CacheFactory::buildMultiCache('availableLanguages');
+        $cacheId = 'availableLanguages';
+        $cache = CacheFactory::buildMultiCache();
 
-        if ($cache->has()) {
-            $languagesInfo = $cache->get();
+        if ($cache->has($cacheId)) {
+            $languagesInfo = $cache->get($cacheId);
         } else {
             $filenames = $this->getAvailableLanguages();
             $languagesInfo = array();
@@ -289,7 +290,7 @@ class API extends \Piwik\Plugin\API
                 );
             }
 
-            $cache->set($languagesInfo);
+            $cache->set($cacheId, $languagesInfo);
         }
 
         $this->availableLanguageNames = $languagesInfo;

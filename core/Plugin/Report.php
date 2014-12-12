@@ -737,9 +737,9 @@ class Report
     {
         $reports = self::getAllReportClasses();
         $cacheId = CacheId::languageAware('Reports' . md5(implode('', $reports)));
-        $cache   = CacheFactory::buildTransientCache($cacheId);
+        $cache   = CacheFactory::buildTransientCache();
 
-        if (!$cache->has()) {
+        if (!$cache->has($cacheId)) {
             $instances = array();
 
             foreach ($reports as $report) {
@@ -748,10 +748,10 @@ class Report
 
             usort($instances, array('self', 'sort'));
 
-            $cache->set($instances);
+            $cache->set($cacheId, $instances);
         }
 
-        return $cache->get();
+        return $cache->get($cacheId);
     }
 
     /**

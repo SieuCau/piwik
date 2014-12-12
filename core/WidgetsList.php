@@ -64,9 +64,11 @@ class WidgetsList extends Singleton
      */
     public static function get()
     {
-        $cache = self::getCacheForCompleteList();
-        if (!self::$listCacheToBeInvalidated && $cache->has()) {
-            return $cache->get();
+        $cache   = self::getCacheForCompleteList();
+        $cacheId = self::getCacheId();
+
+        if (!self::$listCacheToBeInvalidated && $cache->has($cacheId)) {
+            return $cache->get($cacheId);
         }
 
         self::addWidgets();
@@ -84,7 +86,7 @@ class WidgetsList extends Singleton
             $widgets[$category] = $v;
         }
 
-        $cache->set($widgets);
+        $cache->set($cacheId, $widgets);
         self::$listCacheToBeInvalidated = false;
 
         return $widgets;
@@ -271,12 +273,16 @@ class WidgetsList extends Singleton
     {
         self::$widgets    = array();
         self::$hookCalled = false;
-        self::getCacheForCompleteList()->delete();
+        self::getCacheForCompleteList()->delete(self::getCacheId());
+    }
+
+    private static function getCacheId()
+    {
+        return CacheId::pluginAware('WidgetsList');
     }
 
     private static function getCacheForCompleteList()
     {
-        $cacheId = CacheId::pluginAware('WidgetsList');
-        return CacheFactory::buildTransientCache($cacheId);
+        return CacheFactory::buildTransientCache();
     }
 }

@@ -130,10 +130,11 @@ class Plugin
         }
         $this->pluginName = $pluginName;
 
-        $cache = Cache\Factory::buildMultiCache('Plugin' . $pluginName . 'Metadata');
+        $cacheId = 'Plugin' . $pluginName . 'Metadata';
+        $cache = Cache\Factory::buildMultiCache($cacheId);
 
-        if ($cache->has()) {
-            $this->pluginInformation = $cache->get();
+        if ($cache->has($cacheId)) {
+            $this->pluginInformation = $cache->get($cacheId);
         } else {
             $metadataLoader = new MetadataLoader($pluginName);
             $this->pluginInformation = $metadataLoader->load();
@@ -142,14 +143,14 @@ class Plugin
                 throw new \Exception('Plugin ' . $pluginName . ' has defined the method getInformation() and as well as having a plugin.json file. Please delete the getInformation() method from the plugin class. Alternatively, you may delete the plugin directory from plugins/' . $pluginName);
             }
 
-            $cache->set($this->pluginInformation);
+            $cache->set($cacheId, $this->pluginInformation);
         }
     }
 
     private function createCacheIfNeeded()
     {
         if (is_null($this->cache)) {
-            $this->cache = Cache\Factory::buildMultiCache('Plugin' . $this->pluginName);
+            $this->cache = Cache\Factory::buildMultiCache();
         }
     }
 
@@ -319,12 +320,12 @@ class Plugin
     {
         $this->createCacheIfNeeded();
 
-        $this->cache->setId('Plugin' . $this->pluginName . $componentName . $expectedSubclass);
+        $cacheId = 'Plugin' . $this->pluginName . $componentName . $expectedSubclass;
 
         $componentFile = sprintf('%s/plugins/%s/%s.php', PIWIK_INCLUDE_PATH, $this->pluginName, $componentName);
 
-        if ($this->cache->has()) {
-            $klassName = $this->cache->get();
+        if ($this->cache->has($cacheId)) {
+            $klassName = $this->cache->get($cacheId);
 
             if (empty($klassName)) {
                 return; // might by "false" in case has no menu, widget, ...
@@ -335,7 +336,7 @@ class Plugin
             }
 
         } else {
-            $this->cache->set(false); // prevent from trying to load over and over again for instance if there is no Menu for a plugin
+            $this->cache->set($cacheId, false); // prevent from trying to load over and over again for instance if there is no Menu for a plugin
 
             if (!file_exists($componentFile)) {
                 return;
@@ -355,7 +356,7 @@ class Plugin
                 return;
             }
 
-            $this->cache->set($klassName);
+            $this->cache->set($cacheId, $klassName);
         }
 
         return new $klassName;
@@ -365,10 +366,10 @@ class Plugin
     {
         $this->createCacheIfNeeded();
 
-        $this->cache->setId('Plugin' . $this->pluginName . $directoryWithinPlugin . $expectedSubclass);
+        $cacheId = 'Plugin' . $this->pluginName . $directoryWithinPlugin . $expectedSubclass;
 
-        if ($this->cache->has()) {
-            $components = $this->cache->get();
+        if ($this->cache->has($cacheId)) {
+            $components = $this->cache->get($cacheId);
 
             if ($this->includeComponents($components)) {
                 return $components;
@@ -379,7 +380,7 @@ class Plugin
 
         $components = $this->doFindMultipleComponents($directoryWithinPlugin, $expectedSubclass);
 
-        $this->cache->set($components);
+        $this->cache->set($cacheId, $components);
 
         return $components;
     }

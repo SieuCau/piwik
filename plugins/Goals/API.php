@@ -56,8 +56,9 @@ class API extends \Piwik\Plugin\API
      */
     public function getGoals($idSite)
     {
-        $cache = $this->getGoalsInfoStaticCache($idSite);
-        if (!$cache->has()) {
+        $cacheId = self::getCacheId($idSite);
+        $cache = $this->getGoalsInfoStaticCache();
+        if (!$cache->has($cacheId)) {
             $idSite = Site::getIdSitesFromIdSitesString($idSite);
 
             if (empty($idSite)) {
@@ -78,9 +79,10 @@ class API extends \Piwik\Plugin\API
                 $cleanedGoals[$goal['idgoal']] = $goal;
             }
 
-            $cache->set($cleanedGoals);
+            $cache->set($cacheId, $cleanedGoals);
         }
-        return $cache->get();
+
+        return $cache->get($cacheId);
     }
 
     /**
@@ -120,7 +122,7 @@ class API extends \Piwik\Plugin\API
 
         $idGoal = $this->getModel()->createGoalForSite($idSite, $goal);
 
-        $this->getGoalsInfoStaticCache($idSite)->delete();
+        $this->getGoalsInfoStaticCache()->delete(self::getCacheId($idSite));
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
         return $idGoal;
@@ -167,7 +169,7 @@ class API extends \Piwik\Plugin\API
             'revenue'         => $revenue,
         ));
 
-        $this->getGoalsInfoStaticCache($idSite)->delete();
+        $this->getGoalsInfoStaticCache()->delete(self::getCacheId($idSite));
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
     }
@@ -207,7 +209,7 @@ class API extends \Piwik\Plugin\API
         $this->getModel()->deleteGoal($idSite, $idGoal);
         $this->getModel()->deleteGoalConversions($idSite, $idGoal);
 
-        $this->getGoalsInfoStaticCache($idSite)->delete();
+        $this->getGoalsInfoStaticCache()->delete(self::getCacheId($idSite));
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
     }
@@ -568,10 +570,14 @@ class API extends \Piwik\Plugin\API
         }
     }
 
-    private function getGoalsInfoStaticCache($idSite)
-    {
-        $cacheId = CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
 
-        return CacheFactory::buildTransientCache($cacheId);
+    private function getCacheId($idSite)
+    {
+        return CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
+    }
+
+    private function getGoalsInfoStaticCache()
+    {
+        return CacheFactory::buildTransientCache();
     }
 }

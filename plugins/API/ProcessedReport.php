@@ -156,10 +156,10 @@ class ProcessedReport
         // this huge method separately but that makes it also more complicated. leaving it like this for now.
         $key   = $this->buildReportMetadataCacheKey($idSites, $period, $date, $hideMetricsDoc, $showSubtableReports);
         $key   = CacheId::pluginAware($key);
-        $cache = CacheFactory::buildTransientCache($key);
+        $cache = CacheFactory::buildTransientCache();
 
-        if ($cache->has()) {
-            return $cache->get();
+        if ($cache->has($key)) {
+            return $cache->get($key);
         }
 
         $parameters = array('idSites' => $idSites, 'period' => $period, 'date' => $date);
@@ -334,7 +334,7 @@ class ProcessedReport
         }
 
         $actualReports = array_values($availableReports);
-        $cache->set($actualReports);
+        $cache->set($key, $actualReports);
 
         return $actualReports; // make sure array has contiguous key values
     }

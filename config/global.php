@@ -41,6 +41,7 @@ return array(
     }),
 
     'Piwik\Cache' => DI\object(),
+    'Piwik\Cache\Transient' => DI\object(),
     'Piwik\Cache\Multi' => DI\factory(function (ContainerInterface $c) {
 
         if (!Multi::isPopulated()) {

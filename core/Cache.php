@@ -13,22 +13,21 @@ use Piwik\Cache\Backend;
 class Cache
 {
     private $backend;
-    private $id;
 
     public function __construct(Backend $backend)
     {
         $this->backend = $backend;
     }
 
-    public function setId($id)
+    private function getCompletedCacheIdIfValid($id)
     {
         $this->checkId($id);
-        $this->generateCacheId($id);
+        return $this->generateCacheId($id);
     }
 
     private function generateCacheId($id)
     {
-        $this->id = sprintf('piwikcache_%s', $id);
+        return sprintf('piwikcache_%s', $id);
     }
 
     private function checkId($id)
@@ -47,9 +46,11 @@ class Cache
      *
      * @return mixed The cached data or FALSE, if no cache entry exists for the given id.
      */
-    public function get()
+    public function get($id)
     {
-        return $this->backend->doFetch($this->id);
+        $id = $this->getCompletedCacheIdIfValid($id);
+
+        return $this->backend->doFetch($id);
     }
 
     /**
@@ -57,9 +58,11 @@ class Cache
      *
      * @return boolean TRUE if a cache entry exists for the given cache id, FALSE otherwise.
      */
-    public function has()
+    public function has($id)
     {
-        return $this->backend->doContains($this->id);
+        $id = $this->getCompletedCacheIdIfValid($id);
+
+        return $this->backend->doContains($id);
     }
 
     /**
@@ -71,9 +74,11 @@ class Cache
      *
      * @return boolean TRUE if the entry was successfully stored in the cache, FALSE otherwise.
      */
-    public function set($data, $lifeTime = 0)
+    public function set($id, $data, $lifeTime = 0)
     {
-        return $this->backend->doSave($this->id, $data, $lifeTime);
+        $id = $this->getCompletedCacheIdIfValid($id);
+
+        return $this->backend->doSave($id, $data, $lifeTime);
     }
 
     /**
@@ -81,9 +86,11 @@ class Cache
      *
      * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
      */
-    public function delete()
+    public function delete($id)
     {
-        return $this->backend->doDelete($this->id);
+        $id = $this->getCompletedCacheIdIfValid($id);
+
+        return $this->backend->doDelete($id);
     }
 
     /**

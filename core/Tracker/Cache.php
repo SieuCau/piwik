@@ -23,40 +23,24 @@ use Piwik\Tracker;
  */
 class Cache
 {
-    /**
-     * Public for tests only
-     * @var Cache[]
-     */
-    public static $idSiteCache = array();
+    private static $cacheIdGeneral = 'general';
 
     /**
      * Public for tests only
      * @var Cache
      */
-    public static $generalCache = null;
+    public static $cache;
 
     /**
      * @return \Piwik\Cache
      */
-    private static function getGeneralCache()
+    private static function getCache()
     {
-        if (is_null(self::$generalCache)) {
-            self::$generalCache = CacheFactory::buildPersistentCache('general');
+        if (is_null(self::$cache)) {
+            self::$cache = CacheFactory::buildPersistentCache();
         }
 
-        return self::$generalCache;
-    }
-
-    /**
-     * @return \Piwik\Cache
-     */
-    private static function getIdSiteCache($idSite)
-    {
-        if (!array_key_exists($idSite, self::$idSiteCache)) {
-            self::$idSiteCache[$idSite] = CacheFactory::buildPersistentCache($idSite);
-        }
-
-        return self::$idSiteCache[$idSite];
+        return self::$cache;
     }
 
     private static function getTtl()
@@ -81,8 +65,9 @@ class Cache
             return array();
         }
 
-        $cache = self::getIdSiteCache($idSite);
-        $cacheContent = $cache->get();
+        $cache = self::getCache();
+        $cacheId = (int) $idSite;
+        $cacheContent = $cache->get($cacheId);
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -117,7 +102,7 @@ class Cache
         // if nothing is returned from the plugins, we don't save the content
         // this is not expected: all websites are expected to have at least one URL
         if (!empty($content)) {
-            $cache->set($content, self::getTtl());
+            $cache->set($cacheId, $content, self::getTtl());
         }
 
         return $content;
@@ -128,7 +113,7 @@ class Cache
      */
     public static function clearCacheGeneral()
     {
-        self::getGeneralCache()->delete();
+        self::getCache()->delete(self::$cacheIdGeneral);
     }
 
     /**
@@ -139,8 +124,8 @@ class Cache
      */
     public static function getCacheGeneral()
     {
-        $cache = self::getGeneralCache();
-        $cacheContent = $cache->get();
+        $cache = self::getCache();
+        $cacheContent = $cache->get(self::$cacheIdGeneral);
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -186,10 +171,9 @@ class Cache
      */
     public static function setCacheGeneral($value)
     {
-        $cache = self::getGeneralCache();
-        $cache->set($value);
+        $cache = self::getCache();
 
-        return true;
+        return $cache->set(self::$cacheIdGeneral, $value);
     }
 
     /**
@@ -216,8 +200,7 @@ class Cache
      */
     public static function deleteCacheWebsiteAttributes($idSite)
     {
-        $idSite = (int)$idSite;
-        self::getIdSiteCache($idSite)->delete();
+        self::getCache()->delete((int) $idSite);
     }
 
     /**
@@ -225,6 +208,6 @@ class Cache
      */
     public static function deleteTrackerCache()
     {
-        self::getGeneralCache()->flushAll();
+        self::getCache()->flushAll();
     }
 }

@@ -17,64 +17,14 @@ use Piwik\Version;
  *
  * This cache uses one file for all keys. We will load the cache file only once.
  */
-class Multi
+class Multi extends Transient
 {
     /**
      * @var Backend
      */
     private static $backend = null;
-    private static $content = null;
     private static $isDirty = false;
-
-    private $id;
-
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * Get the content related to the current cache key. Make sure to call the method {@link has()} to verify whether
-     * there is actually any content set under this cache key.
-     * @return mixed
-     */
-    public function get()
-    {
-        return self::$content[$this->id];
-    }
-
-    /**
-     * Check whether any content was actually stored for the current cache key.
-     * @return bool
-     */
-    public function has()
-    {
-        return array_key_exists($this->id, self::$content);
-    }
-
-    /**
-     * Set (overwrite) any content related to the current set cache key.
-     * @param $content
-     * @return boolean
-     */
-    public function set($content)
-    {
-        self::$content[$this->id] = $content;
-        self::$isDirty = true;
-        return true;
-    }
-
-    /**
-     * Deletes a cache entry.
-     *
-     * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
-     */
-    public function delete()
-    {
-        if ($this->has()) {
-            unset(self::$content[$this->id]);
-        }
-    }
+    protected static $content = null;
 
     /**
      * Flushes all cache entries.
@@ -87,9 +37,7 @@ class Multi
             self::$backend->doFlush();
         }
 
-        self::$content = array();
-
-        return true;
+        return parent::flushAll();
     }
 
     public static function isPopulated()

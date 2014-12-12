@@ -128,8 +128,9 @@ class MarketplaceApiClient
         ksort($params);
         $query = http_build_query($params);
 
-        $cache  = $this->buildCache($action, $query);
-        $result = $cache->get();
+        $cacheId = $this->getCacheKey($action, $query);
+        $cache  = $this->buildCache();
+        $result = $cache->get($cacheId);
 
         if (false === $result) {
             $endpoint = $this->domain . '/api/1.0/';
@@ -147,17 +148,15 @@ class MarketplaceApiClient
                 throw new MarketplaceApiException($result['error']);
             }
 
-            $cache->set($result, self::CACHE_TIMEOUT_IN_SECONDS);
+            $cache->set($cacheId, $result, self::CACHE_TIMEOUT_IN_SECONDS);
         }
 
         return $result;
     }
 
-    private function buildCache($action, $query)
+    private function buildCache()
     {
-        $cacheKey = $this->getCacheKey($action, $query);
-
-        return Cache\Factory::buildPersistentCache($cacheKey);
+        return Cache\Factory::buildPersistentCache();
     }
 
     private function getCacheKey($action, $query)

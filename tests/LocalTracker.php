@@ -40,8 +40,7 @@ class Piwik_LocalTracker extends PiwikTracker
         }
 
         // unset cached values
-        Cache::$generalCache = null;
-        Cache::$idSiteCache = null;
+        Cache::$cache = null;
 
         // save some values
         $plugins = Config::getInstance()->Plugins['Plugins'];

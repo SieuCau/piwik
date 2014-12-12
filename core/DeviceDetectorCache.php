@@ -28,7 +28,7 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
     public function __construct($ttl = 300)
     {
         $this->ttl   = (int) $ttl;
-        $this->cache = CacheFactory::buildPersistentCache('DeviceDetector');
+        $this->cache = CacheFactory::buildPersistentCache();
     }
 
     /**
@@ -43,15 +43,11 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
             return false;
         }
 
-        $id = $this->cleanupId($id);
-
         if (array_key_exists($id, self::$staticCache)) {
             return self::$staticCache[$id];
         }
 
-        $this->cache->setId($id);
-
-        return $this->cache->get();
+        return $this->cache->get($id);
     }
 
     /**
@@ -68,21 +64,9 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
             return false;
         }
 
-        $id = $this->cleanupId($id);
-
         self::$staticCache[$id] = $content;
 
-        $this->cache->setId($id);
-        return $this->cache->set($content, $this->ttl);
-    }
-
-    protected function cleanupId($id)
-    {
-        if (!Filesystem::isValidFilename($id)) {
-            throw new Exception("Invalid cache ID request $id");
-        }
-
-        return $id;
+        return $this->cache->set($id, $content, $this->ttl);
     }
 
 }

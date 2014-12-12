@@ -22,6 +22,8 @@ use Piwik\Cache\Factory as CacheFactory;
  */
 class Updater extends \Piwik\Updates
 {
+    private static $cacheId = 'AllDimensionModifyTime';
+
     /**
      * @var Updater
      */
@@ -317,20 +319,20 @@ class Updater extends \Piwik\Updates
         $changes = self::getCurrentDimensionFileChanges();
 
         $cache = self::buildCache();
-        $cache->set($changes);
+        $cache->set(self::$cacheId, $changes);
     }
 
     private static function buildCache()
     {
-        return CacheFactory::buildMultiCache('AllDimensionModifyTime');
+        return CacheFactory::buildMultiCache();
     }
 
     private static function getCachedDimensionFileChanges()
     {
         $cache = self::buildCache();
 
-        if ($cache->has()) {
-            return $cache->get();
+        if ($cache->has(self::$cacheId)) {
+            return $cache->get(self::$cacheId);
         }
 
         return array();

@@ -119,10 +119,11 @@ class Manager extends Singleton
      */
     public function loadTrackerPlugins()
     {
-        $cache = Cache\Factory::buildMultiCache('PluginsTracker');
+        $cacheId = 'PluginsTracker';
+        $cache = Cache\Factory::buildMultiCache();
 
-        if ($cache->has()) {
-            $pluginsTracker = $cache->get();
+        if ($cache->has($cacheId)) {
+            $pluginsTracker = $cache->get($cacheId);
         } else {
 
             $this->unloadPlugins();
@@ -137,7 +138,7 @@ class Manager extends Singleton
             }
 
             if (!empty($pluginsTracker)) {
-                $cache->set($pluginsTracker);
+                $cache->set($cacheId, $pluginsTracker);
             }
         }
 
@@ -708,8 +709,8 @@ class Manager extends Singleton
             $cacheKey .= '-' . md5(implode('', $this->getLoadedPluginsName()));
         }
 
-        $cache = Cache\Factory::buildPersistentCache($cacheKey);
-        $translations = $cache->get();
+        $cache = Cache\Factory::buildPersistentCache();
+        $translations = $cache->get($cacheKey);
 
         if (!empty($translations) &&
             is_array($translations) &&
@@ -734,7 +735,7 @@ class Manager extends Singleton
             }
         }
 
-        $cache->set($translations, 43200); // ttl=12hours
+        $cache->set($cacheKey, $translations, 43200); // ttl=12hours
     }
 
     /**

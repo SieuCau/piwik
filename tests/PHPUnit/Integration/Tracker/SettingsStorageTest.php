@@ -42,11 +42,16 @@ class SettingsStorageTest extends StorageTest
     {
         $this->setSettingValueInCache('my0815RandomName');
 
-        $this->assertTrue($this->getCache()->has());
+        $this->assertTrue($this->hasCache());
 
         SettingsStorage::clearCache();
 
-        $this->assertFalse($this->getCache()->has());
+        $this->assertFalse($this->hasCache());
+    }
+
+    private function hasCache()
+    {
+        return $this->getCache()->has($this->storage->getOptionKey());
     }
 
     public function test_storageShouldNotCastAnyCachedValue()
@@ -61,12 +66,12 @@ class SettingsStorageTest extends StorageTest
         $this->storage->setValue($this->setting, 5);
         $this->storage->save();
 
-        $this->assertFalse($this->getCache()->has());
+        $this->assertFalse($this->hasCache());
         $this->assertNotFalse($this->getValueFromOptionTable()); // make sure saved in db
 
         $storage = $this->buildStorage();
         $this->assertEquals(5, $storage->getValue($this->setting));
-        $this->assertTrue($this->getCache()->has());
+        $this->assertTrue($this->hasCache());
     }
 
     public function test_storageCreateACacheEntryIfNoCacheExistsYet()
@@ -76,7 +81,7 @@ class SettingsStorageTest extends StorageTest
 
         $this->setSettingValueAndMakeSureCacheGetsCreated('myVal');
 
-        $cache = $this->getCache()->get();
+        $cache = $this->getCache()->get($this->storage->getOptionKey());
 
         $this->assertEquals(array(
             $this->setting->getKey() => 'myVal'
@@ -90,13 +95,13 @@ class SettingsStorageTest extends StorageTest
 
     private function getCache()
     {
-        return CacheFactory::buildMultiCache($this->storage->getOptionKey());
+        return CacheFactory::buildMultiCache();
     }
 
     private function setSettingValueInCache($value)
     {
         $cache = $this->getCache();
-        $cache->set(array(
+        $cache->set($this->storage->getOptionKey(), array(
             $this->setting->getKey() => $value
         ));
     }

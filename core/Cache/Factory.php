@@ -9,7 +9,6 @@
 namespace Piwik\Cache;
 
 use Piwik\Cache;
-use Piwik\Cache\Backend\File;
 use Piwik\Cache\Backend\ArrayCache;
 use Piwik\Config;
 use Piwik\Container\StaticContainer;
@@ -24,17 +23,12 @@ class Factory
 
     /**
      * This cache will persist any set data in the configured backend.
-     * @param $id
      * @return Cache
      * @throws \DI\NotFoundException
      */
-    public static function buildPersistentCache($id = null)
+    public static function buildPersistentCache()
     {
-        $cache = StaticContainer::getContainer()->make('Piwik\Cache');
-
-        if (!is_null($id)) {
-           $cache->setId($id);
-        }
+        $cache = StaticContainer::getContainer()->get('Piwik\Cache');
 
         return $cache;
     }
@@ -45,14 +39,9 @@ class Factory
      * @param $id
      * @return Cache
      */
-    public static function buildTransientCache($id = null)
+    public static function buildTransientCache()
     {
-        $backend = self::getBackend('array', 'objectcache');
-        $cache   = StaticContainer::getContainer()->make('Piwik\Cache', array('backend' => $backend));
-
-        if (!is_null($id)) {
-           $cache->setId($id);
-        }
+        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Transient');
 
         return $cache;
     }
@@ -66,16 +55,11 @@ class Factory
      * If you invalidate a specific cache key it will be only invalidate for the current environment. Eg only tracker
      * cache, or only web cache.
      *
-     * @param $id
      * @return Multi
      */
-    public static function buildMultiCache($id = null)
+    public static function buildMultiCache()
     {
-        $cache = StaticContainer::getContainer()->make('Piwik\Cache\Multi');
-
-        if (!is_null($id)) {
-            $cache->setId($id);
-        }
+        $cache = StaticContainer::getContainer()->get('Piwik\Cache\Multi');
 
         return $cache;
     }
@@ -89,18 +73,15 @@ class Factory
 
     /**
      * @param $backend
-     * @param $namespace
      * @return Backend
      */
-    public static function getBackend($backend, $namespace = '')
+    public static function getBackend($backend)
     {
-        $cacheKey = $backend . $namespace;
-
-        if (!array_key_exists($cacheKey, self::$backends)) {
-            self::$backends[$cacheKey] = self::buildSpecificBackend($backend);
+        if (!array_key_exists($backend, self::$backends)) {
+            self::$backends[$backend] = self::buildSpecificBackend($backend);
         }
 
-        return self::$backends[$cacheKey];
+        return self::$backends[$backend];
     }
 
     /**

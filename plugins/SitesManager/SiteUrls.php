@@ -12,19 +12,21 @@ use Piwik\Cache;
 
 class SiteUrls
 {
+    private static $cacheId = 'allSiteUrlsPerSite';
+
     public static function clearSitesCache()
     {
-        self::getCache()->delete();
+        self::getCache()->delete(self::$cacheId);
     }
 
     public function getAllCachedSiteUrls()
     {
         $cache    = $this->getCache();
-        $siteUrls = $cache->get();
+        $siteUrls = $cache->get(self::$cacheId);
 
         if (empty($siteUrls)) {
             $siteUrls = $this->getAllSiteUrls();
-            $cache->set($siteUrls, 1800);
+            $cache->set(self::$cacheId, $siteUrls, 1800);
         }
 
         return $siteUrls;
@@ -50,6 +52,6 @@ class SiteUrls
 
     private static function getCache()
     {
-        return Cache\Factory::buildPersistentCache('allSiteUrlsPerSite');
+        return Cache\Factory::buildPersistentCache();
     }
 }
