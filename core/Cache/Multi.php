@@ -66,7 +66,10 @@ class Multi
     {
         if ($this->has($id)) {
             unset($this->content[$id]);
+            return true;
         }
+
+        return false;
     }
 
     /**
