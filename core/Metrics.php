@@ -8,7 +8,6 @@
  */
 namespace Piwik;
 
-use Piwik\CacheId;
 use Piwik\Cache as PiwikCache;
 use Piwik\Metrics\Formatter;
 

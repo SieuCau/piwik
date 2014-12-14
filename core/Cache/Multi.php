@@ -33,9 +33,9 @@ class Multi
     /**
      * @var Backend
      */
-    private $storage = null;
-    private $storageId = null;
-    private $content = null;
+    private $storage;
+    private $storageId;
+    private $content;
     private $isDirty = false;
 
     /**
@@ -91,18 +91,13 @@ class Multi
      */
     public function flushAll()
     {
-        if (!is_null($this->storage)) {
-            $this->storage->doFlush();
+        if ($this->isPopulated()) {
+            $this->storage->doDelete($this->storageId);
         }
 
         $this->content = array();
 
         return true;
-    }
-
-    public function isPopulated()
-    {
-        return !is_null($this->content);
     }
 
     public function populateCache(Backend $storage, $storageId)
@@ -118,9 +113,14 @@ class Multi
         }
     }
 
+    public function isPopulated()
+    {
+        return !is_null($this->storage) && !is_null($this->storageId);
+    }
+
     public function persistCacheIfNeeded($ttl)
     {
-        if (is_null($this->storage) || is_null($this->storageId)) {
+        if (!$this->isPopulated()) {
             throw new RuntimeException('Cache was never populated. Make sure to call populateCache() first');
         }
 
