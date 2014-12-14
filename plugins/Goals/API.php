@@ -10,8 +10,8 @@ namespace Piwik\Plugins\Goals;
 
 use Exception;
 use Piwik\Archive;
-use Piwik\Cache\CacheId;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\CacheId;
+use Piwik\Cache as PiwikCache;
 use Piwik\Common;
 use Piwik\DataTable;
 use Piwik\Db;
@@ -578,6 +578,6 @@ class API extends \Piwik\Plugin\API
 
     private function getGoalsInfoStaticCache()
     {
-        return CacheFactory::buildTransientCache();
+        return PiwikCache::getTransientCache();
     }
 }

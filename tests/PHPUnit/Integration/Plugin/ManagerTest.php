@@ -11,7 +11,7 @@ namespace Piwik\Tests\Integration\Plugin;
 use Piwik\Db;
 use Piwik\Plugin;
 use Piwik\Settings\Storage;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Piwik\Tests\Integration\Settings\IntegrationTestCase;
 
 /**
@@ -77,7 +77,7 @@ class ManagerTest extends IntegrationTestCase
 
     private function getCacheForTrackerPlugins()
     {
-        return CacheFactory::buildMultiCache();
+        return PiwikCache::getMultiCache();
     }
 
     private function assertOnlyTrackerPluginsAreLoaded($expectedPluginNamesLoaded)

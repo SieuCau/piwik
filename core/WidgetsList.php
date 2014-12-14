@@ -8,8 +8,8 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\CacheId;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\CacheId;
+use Piwik\Cache as PiwikCache;
 use Piwik\Plugin\Report;
 use Piwik\Plugin\Widgets;
 
@@ -283,6 +283,6 @@ class WidgetsList extends Singleton
 
     private static function getCacheForCompleteList()
     {
-        return CacheFactory::buildTransientCache();
+        return PiwikCache::getTransientCache();
     }
 }

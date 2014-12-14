@@ -146,6 +146,6 @@ class SiteUrlsTest extends IntegrationTestCase
 
     private function buildCache()
     {
-        return Cache\Factory::buildPersistentCache();
+        return Cache::getPersistentCache();
     }
 }

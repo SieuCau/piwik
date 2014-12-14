@@ -15,7 +15,7 @@ use Piwik\Plugin\Dimension\ConversionDimension;
 use Piwik\Db;
 use Piwik\Updater as PiwikUpdater;
 use Piwik\Filesystem;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 
 /**
  * Class that handles dimension updates
@@ -324,7 +324,7 @@ class Updater extends \Piwik\Updates
 
     private static function buildCache()
     {
-        return CacheFactory::buildMultiCache();
+        return PiwikCache::getMultiCache();
     }
 
     private static function getCachedDimensionFileChanges()

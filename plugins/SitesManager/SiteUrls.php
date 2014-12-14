@@ -52,6 +52,6 @@ class SiteUrls
 
     private static function getCache()
     {
-        return Cache\Factory::buildPersistentCache();
+        return Cache::getPersistentCache();
     }
 }

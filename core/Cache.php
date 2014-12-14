@@ -9,97 +9,120 @@
 namespace Piwik;
 
 use Piwik\Cache\Backend;
+use Piwik\Container\StaticContainer;
+use Piwik\Cache\Backend\Factory\BackendNotFoundException;
 
 class Cache
 {
-    private $backend;
 
-    public function __construct(Backend $backend)
+    /**
+     * This cache will persist any set data in the configured backend.
+     * @return Cache\Persistent
+     * @throws \DI\NotFoundException
+     */
+    public static function getPersistentCache()
     {
-        $this->backend = $backend;
+        return StaticContainer::getContainer()->get('Piwik\Cache\Persistent');
     }
 
-    private function getCompletedCacheIdIfValid($id)
+    /**
+     * This cache will not persist any data it contains. It will be only cached during one request. While the persistent
+     * cache cannot cache objects this one can cache any kind of data.
+     * @return Cache\Transient
+     */
+    public static function getTransientCache()
     {
-        $this->checkId($id);
-        return $this->generateCacheId($id);
+        return StaticContainer::getContainer()->get('Piwik\Cache\Transient');
     }
 
-    private function generateCacheId($id)
+    /**
+     * Maybe we can find a better name for this cache. This cache saves multiple cache entries under one cache entry.
+     * This comes handy for things that we need very often, nearly in every request. Instead of having to read eg.
+     * a hundred caches from file we only load one file which contains the hundred keys. Should be used only for things
+     * that we need very often (eg list of available plugin widgets classes) and only for cache entries that are not
+     * too large to keep loading and parsing the single cache entry fast. This cache is environment aware.
+     * If you invalidate a specific cache key it will be only invalidate for the current environment. Eg only tracker
+     * cache, or only web cache.
+     *
+     * @return Cache\Multi
+     */
+    public static function getMultiCache()
     {
-        return sprintf('piwikcache_%s', $id);
+        return StaticContainer::getContainer()->get('Piwik\Cache\Multi');
     }
 
-    private function checkId($id)
+    public static function flushAll()
     {
-        if (empty($id)) {
-            throw new \Exception('Empty cache ID given');
+        self::getPersistentCache()->flushAll();
+        self::getTransientCache()->flushAll();
+        self::getMultiCache()->flushAll();
+    }
+
+    private static function getOptions($type)
+    {
+        $options = self::getBackendOptions($type);
+
+        switch ($type) {
+            case 'file':
+
+                $options = array('directory' => StaticContainer::getContainer()->get('path.cache'));
+                break;
+
+            case 'chained':
+
+                foreach ($options['backends'] as $backend) {
+                    $options[$backend] = self::getOptions($backend);
+                }
+
+                break;
+
+            case 'redis':
+
+                if (!empty($options['timeout'])) {
+                    $options['timeout'] = (float)Common::forceDotAsSeparatorForDecimalPoint($options['timeout']);
+                }
+
+                break;
         }
 
-        if (!Filesystem::isValidFilename($id)) {
-            throw new \Exception("Invalid cache ID request $id");
+        return $options;
+    }
+
+    /**
+     * @param $type
+     * @return Cache\Backend
+     */
+    public static function buildBackend($type)
+    {
+        $factory = new Cache\Backend\Factory();
+        $options = self::getOptions($type);
+
+        try {
+            $backend = $factory->buildBackend($type, $options);
+        } catch (BackendNotFoundException $e) {
+            $backend = null;
+
+            /**
+             * TODO document this event
+             * @ignore this API is not stable yet
+             */
+            Piwik::postEvent('Cache.newBackend', array($type, $options, &$backend));
+
+            if (is_object($backend) && $backend instanceof Backend) {
+                return $backend;
+            }
+
+            throw $e;
         }
+
+        return $backend;
     }
 
-    /**
-     * Fetches an entry from the cache.
-     *
-     * @return mixed The cached data or FALSE, if no cache entry exists for the given id.
-     */
-    public function get($id)
+    private static function getBackendOptions($backend)
     {
-        $id = $this->getCompletedCacheIdIfValid($id);
+        $key = ucfirst($backend) . 'Cache';
+        $options = Config::getInstance()->$key;
 
-        return $this->backend->doFetch($id);
-    }
-
-    /**
-     * Tests if an entry exists in the cache.
-     *
-     * @return boolean TRUE if a cache entry exists for the given cache id, FALSE otherwise.
-     */
-    public function has($id)
-    {
-        $id = $this->getCompletedCacheIdIfValid($id);
-
-        return $this->backend->doContains($id);
-    }
-
-    /**
-     * Puts data into the cache.
-     *
-     * @param mixed  $data     The cache entry/data.
-     * @param int    $lifeTime The cache lifetime.
-     *                         If != 0, sets a specific lifetime for this cache entry (0 => infinite lifeTime).
-     *
-     * @return boolean TRUE if the entry was successfully stored in the cache, FALSE otherwise.
-     */
-    public function set($id, $data, $lifeTime = 0)
-    {
-        $id = $this->getCompletedCacheIdIfValid($id);
-
-        return $this->backend->doSave($id, $data, $lifeTime);
-    }
-
-    /**
-     * Deletes a cache entry.
-     *
-     * @return boolean TRUE if the cache entry was successfully deleted, FALSE otherwise.
-     */
-    public function delete($id)
-    {
-        $id = $this->getCompletedCacheIdIfValid($id);
-
-        return $this->backend->doDelete($id);
-    }
-
-    /**
-     * Flushes all cache entries.
-     *
-     * @return boolean TRUE if the cache entries were successfully flushed, FALSE otherwise.
-     */
-    public function flushAll()
-    {
-        return $this->backend->doFlush();
+        return $options;
     }
 }

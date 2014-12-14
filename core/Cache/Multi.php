@@ -10,12 +10,23 @@ namespace Piwik\Cache;
 
 use Piwik\Cache;
 use Piwik\Cache\Backend;
-use Piwik\Version;
+use RuntimeException;
 
 /**
  * This class is used to cache data on the filesystem.
  *
  * This cache uses one file for all keys. We will load the cache file only once.
+ *
+ * $multi = new Multi();
+ *
+ * if (!$multi->isPopulated()) {
+ *   $multi->populateCache($backend, $storageId = 'multicache');
+ *   // $multi->get('my'id')
+ *   // $multi->set('myid', 'test');
+ *
+ *   // ... at the end of the request
+ *   $multi->persistCacheIfNeeded(43200);
+ * }
  */
 class Multi
 {
@@ -23,6 +34,7 @@ class Multi
      * @var Backend
      */
     private $storage = null;
+    private $storageId = null;
     private $content = null;
     private $isDirty = false;
 
@@ -93,30 +105,27 @@ class Multi
         return !is_null($this->content);
     }
 
-    public function populateCache(Backend $storage, $mode)
+    public function populateCache(Backend $storage, $storageId)
     {
         $this->content = array();
         $this->storage = $storage;
+        $this->storageId = $storageId;
 
-        $content = $storage->doFetch($this->getCacheId($mode));
+        $content = $storage->doFetch($storageId);
 
         if (is_array($content)) {
             $this->content = $content;
         }
     }
 
-    private function getCacheId($mode)
+    public function persistCacheIfNeeded($ttl)
     {
-        return 'multicache-' . str_replace(array('.', '-'), '', Version::VERSION) . '-' . $mode;
-    }
+        if (is_null($this->storage) || is_null($this->storageId)) {
+            throw new RuntimeException('Cache was never populated. Make sure to call populateCache() first');
+        }
 
-    /**
-     * @ignore
-     */
-    public function persistCache(Backend $storage, $mode, $ttl)
-    {
         if ($this->isDirty) {
-            $storage->doSave($this->getCacheId($mode), $this->content, $ttl);
+            $this->storage->doSave($this->storageId, $this->content, $ttl);
         }
     }
 

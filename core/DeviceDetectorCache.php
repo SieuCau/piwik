@@ -8,7 +8,7 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Exception;
 
 /**
@@ -28,7 +28,7 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
     public function __construct($ttl = 300)
     {
         $this->ttl   = (int) $ttl;
-        $this->cache = CacheFactory::buildPersistentCache();
+        $this->cache = PiwikCache::getPersistentCache();
     }
 
     /**

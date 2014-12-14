@@ -8,10 +8,12 @@
  */
 namespace Piwik\Cache\Backend;
 
+use Piwik\Cache\Backend;
+
 /**
  * This class is used to cache data on the filesystem.
  */
-class ArrayCache extends \Doctrine\Common\Cache\ArrayCache implements \Piwik\Cache\Backend
+class ArrayCache extends \Doctrine\Common\Cache\ArrayCache implements Backend
 {
 
     public function doFetch($id)

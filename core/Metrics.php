@@ -8,8 +8,8 @@
  */
 namespace Piwik;
 
-use Piwik\Cache\CacheId;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\CacheId;
+use Piwik\Cache as PiwikCache;
 use Piwik\Metrics\Formatter;
 
 require_once PIWIK_INCLUDE_PATH . "/core/Piwik.php";
@@ -251,7 +251,7 @@ class Metrics
     public static function getDefaultMetricTranslations()
     {
         $cacheId = CacheId::pluginAware('DefaultMetricTranslations');
-        $cache   = CacheFactory::buildTransientCache();
+        $cache   = PiwikCache::getTransientCache();
 
         if ($cache->has($cacheId)) {
             return $cache->get($cacheId);
@@ -311,7 +311,7 @@ class Metrics
     public static function getDefaultMetrics()
     {
         $cacheId = CacheId::languageAware('DefaultMetrics');
-        $cache   = CacheFactory::buildTransientCache();
+        $cache   = PiwikCache::getTransientCache();
 
         if ($cache->has($cacheId)) {
             return $cache->get($cacheId);
@@ -333,7 +333,7 @@ class Metrics
     public static function getDefaultProcessedMetrics()
     {
         $cacheId = CacheId::languageAware('DefaultProcessedMetrics');
-        $cache   = CacheFactory::buildTransientCache();
+        $cache   = PiwikCache::getTransientCache();
 
         if ($cache->has($cacheId)) {
             return $cache->get($cacheId);
@@ -387,7 +387,7 @@ class Metrics
     public static function getDefaultMetricsDocumentation()
     {
         $cacheId = CacheId::pluginAware('DefaultMetricsDocumentation');
-        $cache   = CacheFactory::buildTransientCache();
+        $cache   = PiwikCache::getTransientCache();
 
         if ($cache->has($cacheId)) {
             return $cache->get($cacheId);

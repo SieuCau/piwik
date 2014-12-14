@@ -12,7 +12,7 @@ namespace Piwik\Tracker;
 use Piwik\Cache\Multi;
 use Piwik\Settings\Storage;
 use Piwik\Tracker;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 
 /**
  * Loads settings from tracker cache instead of database. If not yet present in tracker cache will cache it.
@@ -54,7 +54,7 @@ class SettingsStorage extends Storage
 
     private static function buildCache()
     {
-        return CacheFactory::buildMultiCache();
+        return PiwikCache::getMultiCache();
     }
 
 }

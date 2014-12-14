@@ -11,8 +11,8 @@ namespace Piwik\Plugins\API;
 use Exception;
 use Piwik\API\Request;
 use Piwik\Archive\DataTableFactory;
-use Piwik\Cache\CacheId;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\CacheId;
+use Piwik\Cache as PiwikCache;
 use Piwik\Common;
 use Piwik\DataTable;
 use Piwik\DataTable\Row;
@@ -156,7 +156,7 @@ class ProcessedReport
         // this huge method separately but that makes it also more complicated. leaving it like this for now.
         $key   = $this->buildReportMetadataCacheKey($idSites, $period, $date, $hideMetricsDoc, $showSubtableReports);
         $key   = CacheId::pluginAware($key);
-        $cache = CacheFactory::buildTransientCache();
+        $cache = PiwikCache::getTransientCache();
 
         if ($cache->has($key)) {
             return $cache->get($key);

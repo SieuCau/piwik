@@ -11,7 +11,7 @@ namespace Piwik;
 use Exception;
 use Piwik\Container\StaticContainer;
 use Piwik\Tracker\Cache;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 
 /**
  * Contains helper functions that deal with the filesystem.
@@ -28,7 +28,7 @@ class Filesystem
         AssetManager::getInstance()->removeMergedAssets($pluginName);
         View::clearCompiledTemplates();
         Cache::deleteTrackerCache();
-        CacheFactory::flushAll();
+        PiwikCache::flushAll();
         self::clearPhpCaches();
     }
 

@@ -21,13 +21,7 @@ class File extends PhpFileCache implements Backend
 {
     // for testing purposes since tests run on both CLI/FPM (changes in CLI can't invalidate
     // opcache in FPM, so we have to invalidate before reading)
-    // TODO ideally we can remove this kinda stuff with dependency injection by using another backend there
     public static $invalidateOpCacheBeforeRead = false;
-
-    /**
-     * @var \Callable[]
-     */
-    private static $onDeleteCallback = array();
 
     protected $extension = '.php';
 
@@ -48,7 +42,7 @@ class File extends PhpFileCache implements Backend
     public function doSave($id, $data, $lifeTime = 0)
     {
         if (!is_dir($this->directory)) {
-            Filesystem::mkdir($this->directory);
+            $this->createDirectory($this->directory);
         }
 
         if (!is_writable($this->directory)) {
@@ -68,25 +62,18 @@ class File extends PhpFileCache implements Backend
 
         $success = parent::doDelete($id);
 
-        $this->invalidateCacheFile($id);
+        $this->invalidateCacheFile($id); // in case file was cached by another request between invalidate and doDelete()
 
         return $success;
     }
 
     public function doFlush()
     {
-        $self = $this;
-        $beforeUnlink = function ($path) use ($self) {
-            $self->opCacheInvalidate($path);
-        };
-
-        Filesystem::unlinkRecursive($this->directory, $deleteRootToo = false, $beforeUnlink);
-
-        if (!empty(self::$onDeleteCallback)) {
-            foreach (self::$onDeleteCallback as $callback) {
-                $callback();
-            }
+        foreach ($this->getFileIterator() as $name => $file) {
+            $this->opCacheInvalidate($file);
         }
+
+        parent::doFlush();
     }
 
     private function invalidateCacheFile($id)
@@ -108,12 +95,7 @@ class File extends PhpFileCache implements Backend
         return $path . DIRECTORY_SEPARATOR . $id . $this->extension;
     }
 
-    public function addOnDeleteCallback($onDeleteCallback)
-    {
-        self::$onDeleteCallback[] = $onDeleteCallback;
-    }
-
-    public function opCacheInvalidate($filepath)
+    private function opCacheInvalidate($filepath)
     {
         if (is_file($filepath)) {
             if (function_exists('opcache_invalidate')) {
@@ -121,6 +103,34 @@ class File extends PhpFileCache implements Backend
             }
             if (function_exists('apc_delete_file')) {
                 @apc_delete_file($filepath);
+            }
+        }
+    }
+
+    /**
+     * @return \Iterator
+     */
+    private function getFileIterator()
+    {
+        $pattern = '/^.+\\' . $this->extension . '$/i';
+        $iterator = new \RecursiveDirectoryIterator($this->directory);
+        $iterator = new \RecursiveIteratorIterator($iterator);
+        return new \RegexIterator($iterator, $pattern);
+    }
+
+    private function createDirectory($path)
+    {
+        if (!is_dir($path)) {
+            // the mode in mkdir is modified by the current umask
+            @mkdir($path, 0750, $recursive = true);
+        }
+
+        // try to overcome restrictive umask (mis-)configuration
+        if (!is_writable($path)) {
+            @chmod($path, 0755);
+            if (!is_writable($path)) {
+                @chmod($path, 0775);
+                // enough! we're not going to make the directory world-writeable
             }
         }
     }

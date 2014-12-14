@@ -84,8 +84,7 @@ class Manager extends Singleton
         'ExampleVisualization',
         'ExamplePluginTemplate',
         'ExampleTracker',
-        'ExampleReport',
-        'CacheProvider'
+        'ExampleReport'
     );
 
     // Themes bundled with core package, disabled by default
@@ -120,7 +119,7 @@ class Manager extends Singleton
     public function loadTrackerPlugins()
     {
         $cacheId = 'PluginsTracker';
-        $cache = Cache\Factory::buildMultiCache();
+        $cache = Cache::getMultiCache();
 
         if ($cache->has($cacheId)) {
             $pluginsTracker = $cache->get($cacheId);
@@ -709,7 +708,7 @@ class Manager extends Singleton
             $cacheKey .= '-' . md5(implode('', $this->getLoadedPluginsName()));
         }
 
-        $cache = Cache\Factory::buildPersistentCache();
+        $cache = Cache::getPersistentCache();
         $translations = $cache->get($cacheKey);
 
         if (!empty($translations) &&

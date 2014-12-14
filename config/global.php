@@ -40,10 +40,9 @@ return array(
 
         return $backend;
     }),
-    'Piwik\Cache' => DI\object(),
+    'Piwik\Cache\Persistent' => DI\object(),
     'Piwik\Cache\Transient' => DI\factory(function (ContainerInterface $c) {
-
-        $backend = \Piwik\Cache\Factory::buildBackend('array');
+        $backend = \Piwik\Cache::buildBackend('array');
 
         return new Transient($backend);
     }),
@@ -53,29 +52,29 @@ return array(
 
         if (!$multi->isPopulated()) {
             $type    = $c->get('cache.backend');
-            $backend = \Piwik\Cache\Factory::buildBackend($type);
+            $backend = \Piwik\Cache::buildBackend($type);
+            $cacheId = 'multicache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
 
             if (SettingsServer::isTrackerApiRequest()) {
                 $eventToPersist = 'Tracker.end';
-                $mode = 'tracker';
+                $cacheId .= 'tracker';
             } else {
                 $eventToPersist = 'Request.dispatch.end';
-                $mode = 'ui';
+                $cacheId .= 'ui';
             }
 
-            $multi->populateCache($backend, $mode);
-            \Piwik\Piwik::addAction($eventToPersist, function () use ($multi, $backend, $mode) {
-                $multi->persistCache($backend, $mode, 43200);
+            $multi->populateCache($backend, $cacheId);
+            \Piwik\Piwik::addAction($eventToPersist, function () use ($multi) {
+                $multi->persistCacheIfNeeded(43200);
             });
         }
 
         return $multi;
     }),
-    'Piwik\Cache\Backend\File' => DI\object()->constructor(DI\link('path.cache')),
     'Piwik\Cache\Backend' => DI\factory(function (ContainerInterface $c) {
 
         $type    = $c->get('cache.backend');
-        $backend = \Piwik\Cache\Factory::buildBackend($type);
+        $backend = \Piwik\Cache::buildBackend($type);
 
         return $backend;
     }),

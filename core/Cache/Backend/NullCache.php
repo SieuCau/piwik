@@ -8,10 +8,12 @@
  */
 namespace Piwik\Cache\Backend;
 
+use Piwik\Cache\Backend;
+
 /**
- * Can be used in tests and development. Does not save anything, ever.
+ * Can be used in development to prevent caching. Does not cache anything.
  */
-class BlackHole implements \Piwik\Cache\Backend
+class NullCache implements Backend
 {
 
     public function doFetch($id)

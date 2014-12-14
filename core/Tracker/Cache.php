@@ -10,7 +10,7 @@ namespace Piwik\Tracker;
 
 use Piwik\Access;
 use Piwik\ArchiveProcessor\Rules;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Piwik\Common;
 use Piwik\Config;
 use Piwik\Option;
@@ -32,12 +32,12 @@ class Cache
     public static $cache;
 
     /**
-     * @return \Piwik\Cache
+     * @return \Piwik\Cache\Persistent
      */
     private static function getCache()
     {
         if (is_null(self::$cache)) {
-            self::$cache = CacheFactory::buildPersistentCache();
+            self::$cache = PiwikCache::getPersistentCache();
         }
 
         return self::$cache;

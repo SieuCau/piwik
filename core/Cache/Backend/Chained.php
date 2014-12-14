@@ -13,7 +13,7 @@ use Piwik\Cache\Backend;
 /**
  * TODO: extend Doctrine ChainCache as soon as available
  */
-class Chained implements \Piwik\Cache\Backend
+class Chained implements Backend
 {
     /**
      * @var Backend[]

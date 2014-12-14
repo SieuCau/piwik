@@ -8,7 +8,7 @@
 
 namespace Piwik\Tests\Integration\Tracker;
 
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Piwik\Settings\Storage;
 use Piwik\Tests\Integration\Settings\StorageTest;
 use Piwik\Tracker\Cache;
@@ -95,7 +95,7 @@ class SettingsStorageTest extends StorageTest
 
     private function getCache()
     {
-        return CacheFactory::buildMultiCache();
+        return PiwikCache::getMultiCache();
     }
 
     private function setSettingValueInCache($value)

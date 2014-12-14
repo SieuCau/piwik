@@ -12,7 +12,7 @@ namespace Piwik\Plugins\LanguagesManager;
 use Piwik\Db;
 use Piwik\Filesystem;
 use Piwik\Piwik;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Piwik\Plugin\Manager as PluginManager;
 
 /**
@@ -273,7 +273,7 @@ class API extends \Piwik\Plugin\API
         }
 
         $cacheId = 'availableLanguages';
-        $cache = CacheFactory::buildMultiCache();
+        $cache = PiwikCache::getMultiCache();
 
         if ($cache->has($cacheId)) {
             $languagesInfo = $cache->get($cacheId);

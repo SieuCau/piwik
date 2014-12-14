@@ -8,7 +8,7 @@
 
 namespace Piwik\Plugins\Insights\tests;
 use Piwik\API\Request as ApiRequest;
-use Piwik\Cache\Factory as CacheFactory;
+use Piwik\Cache as PiwikCache;
 use Piwik\DataTable;
 use Piwik\DataTable\Row;
 use Piwik\Plugins\Insights\API;
@@ -39,7 +39,7 @@ class ApiTest extends SystemTestCase
     {
         parent::setUp();
 
-        CacheFactory::flushAll();
+        PiwikCache::flushAll();
 
         Translate::reloadLanguage('en');
         $this->api = API::getInstance();
