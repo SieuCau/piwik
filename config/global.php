@@ -41,11 +41,7 @@ return array(
         return $backend;
     }),
     'Piwik\Cache\Lazy' => DI\object(),
-    'Piwik\Cache\Transient' => DI\factory(function (ContainerInterface $c) {
-        $backend = \Piwik\Cache::buildBackend('array');
-
-        return new Transient($backend);
-    }),
+    'Piwik\Cache\Transient' => DI\object(),
     'Piwik\Cache\Eager' => DI\factory(function (ContainerInterface $c) {
 
         $type    = $c->get('cache.backend');
