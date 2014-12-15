@@ -244,7 +244,7 @@ class Fixture extends \PHPUnit_Framework_Assert
         $this->getTestEnvironment()->executeSetupTestEnvHook();
         Piwik_TestingEnvironment::addSendMailHook();
 
-        PiwikCache::getEagerCache()->flushAll();
+        PiwikCache::getTransientCache()->flushAll();
 
         if ($this->overwriteExisting
             || !$this->isFixtureSetUp()

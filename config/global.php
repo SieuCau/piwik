@@ -50,7 +50,7 @@ return array(
 
         $type    = $c->get('cache.backend');
         $backend = \Piwik\Cache::buildBackend($type);
-        $cacheId = 'multicache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
+        $cacheId = 'eagercache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
 
         if (SettingsServer::isTrackerApiRequest()) {
             $eventToPersist = 'Tracker.end';
