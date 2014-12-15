@@ -1,7 +1,7 @@
 <?php
 
 use Interop\Container\ContainerInterface;
-use Piwik\Cache\Multi;
+use Piwik\Cache\Eager;
 use Piwik\Cache\Transient;
 use Piwik\SettingsServer;
 
@@ -40,36 +40,32 @@ return array(
 
         return $backend;
     }),
-    'Piwik\Cache\Persistent' => DI\object(),
+    'Piwik\Cache\Lazy' => DI\object(),
     'Piwik\Cache\Transient' => DI\factory(function (ContainerInterface $c) {
         $backend = \Piwik\Cache::buildBackend('array');
 
         return new Transient($backend);
     }),
-    'Piwik\Cache\Multi' => DI\factory(function (ContainerInterface $c) {
+    'Piwik\Cache\Eager' => DI\factory(function (ContainerInterface $c) {
 
-        $multi = new Multi();
+        $type    = $c->get('cache.backend');
+        $backend = \Piwik\Cache::buildBackend($type);
+        $cacheId = 'multicache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
 
-        if (!$multi->isPopulated()) {
-            $type    = $c->get('cache.backend');
-            $backend = \Piwik\Cache::buildBackend($type);
-            $cacheId = 'multicache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
-
-            if (SettingsServer::isTrackerApiRequest()) {
-                $eventToPersist = 'Tracker.end';
-                $cacheId .= 'tracker';
-            } else {
-                $eventToPersist = 'Request.dispatch.end';
-                $cacheId .= 'ui';
-            }
-
-            $multi->populateCache($backend, $cacheId);
-            \Piwik\Piwik::addAction($eventToPersist, function () use ($multi) {
-                $multi->persistCacheIfNeeded(43200);
-            });
+        if (SettingsServer::isTrackerApiRequest()) {
+            $eventToPersist = 'Tracker.end';
+            $cacheId .= 'tracker';
+        } else {
+            $eventToPersist = 'Request.dispatch.end';
+            $cacheId .= 'ui';
         }
 
-        return $multi;
+        $cache = new Eager($backend, $cacheId);
+        \Piwik\Piwik::addAction($eventToPersist, function () use ($cache) {
+            $cache->persistCacheIfNeeded(43200);
+        });
+
+        return $cache;
     }),
     'Piwik\Cache\Backend' => DI\factory(function (ContainerInterface $c) {
 

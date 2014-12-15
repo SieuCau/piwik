@@ -58,7 +58,7 @@ class API extends \Piwik\Plugin\API
     {
         $cacheId = self::getCacheId($idSite);
         $cache = $this->getGoalsInfoStaticCache();
-        if (!$cache->has($cacheId)) {
+        if (!$cache->contains($cacheId)) {
             $idSite = Site::getIdSitesFromIdSitesString($idSite);
 
             if (empty($idSite)) {
@@ -79,10 +79,10 @@ class API extends \Piwik\Plugin\API
                 $cleanedGoals[$goal['idgoal']] = $goal;
             }
 
-            $cache->set($cacheId, $cleanedGoals);
+            $cache->save($cacheId, $cleanedGoals);
         }
 
-        return $cache->get($cacheId);
+        return $cache->fetch($cacheId);
     }
 
     /**

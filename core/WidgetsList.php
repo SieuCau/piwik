@@ -66,8 +66,8 @@ class WidgetsList extends Singleton
         $cache   = self::getCacheForCompleteList();
         $cacheId = self::getCacheId();
 
-        if (!self::$listCacheToBeInvalidated && $cache->has($cacheId)) {
-            return $cache->get($cacheId);
+        if (!self::$listCacheToBeInvalidated && $cache->contains($cacheId)) {
+            return $cache->fetch($cacheId);
         }
 
         self::addWidgets();
@@ -85,7 +85,7 @@ class WidgetsList extends Singleton
             $widgets[$category] = $v;
         }
 
-        $cache->set($cacheId, $widgets);
+        $cache->save($cacheId, $widgets);
         self::$listCacheToBeInvalidated = false;
 
         return $widgets;

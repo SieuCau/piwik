@@ -51,7 +51,7 @@ class SettingsStorageTest extends StorageTest
 
     private function hasCache()
     {
-        return $this->getCache()->has($this->storage->getOptionKey());
+        return $this->getCache()->contains($this->storage->getOptionKey());
     }
 
     public function test_storageShouldNotCastAnyCachedValue()
@@ -81,7 +81,7 @@ class SettingsStorageTest extends StorageTest
 
         $this->setSettingValueAndMakeSureCacheGetsCreated('myVal');
 
-        $cache = $this->getCache()->get($this->storage->getOptionKey());
+        $cache = $this->getCache()->fetch($this->storage->getOptionKey());
 
         $this->assertEquals(array(
             $this->setting->getKey() => 'myVal'
@@ -95,13 +95,13 @@ class SettingsStorageTest extends StorageTest
 
     private function getCache()
     {
-        return PiwikCache::getMultiCache();
+        return PiwikCache::getEagerCache();
     }
 
     private function setSettingValueInCache($value)
     {
         $cache = $this->getCache();
-        $cache->set($this->storage->getOptionKey(), array(
+        $cache->save($this->storage->getOptionKey(), array(
             $this->setting->getKey() => $value
         ));
     }

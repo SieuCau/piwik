@@ -739,7 +739,7 @@ class Report
         $cacheId = CacheId::languageAware('Reports' . md5(implode('', $reports)));
         $cache   = PiwikCache::getTransientCache();
 
-        if (!$cache->has($cacheId)) {
+        if (!$cache->contains($cacheId)) {
             $instances = array();
 
             foreach ($reports as $report) {
@@ -748,10 +748,10 @@ class Report
 
             usort($instances, array('self', 'sort'));
 
-            $cache->set($cacheId, $instances);
+            $cache->save($cacheId, $instances);
         }
 
-        return $cache->get($cacheId);
+        return $cache->fetch($cacheId);
     }
 
     /**

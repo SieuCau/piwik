@@ -24,7 +24,7 @@ class MarketplaceApiClient
 
     public static function clearAllCacheEntries()
     {
-        $cache = Cache::getPersistentCache();
+        $cache = Cache::getLazyCache();
         $cache->flushAll();
     }
 
@@ -130,7 +130,7 @@ class MarketplaceApiClient
 
         $cacheId = $this->getCacheKey($action, $query);
         $cache  = $this->buildCache();
-        $result = $cache->get($cacheId);
+        $result = $cache->fetch($cacheId);
 
         if (false === $result) {
             $endpoint = $this->domain . '/api/1.0/';
@@ -148,7 +148,7 @@ class MarketplaceApiClient
                 throw new MarketplaceApiException($result['error']);
             }
 
-            $cache->set($cacheId, $result, self::CACHE_TIMEOUT_IN_SECONDS);
+            $cache->save($cacheId, $result, self::CACHE_TIMEOUT_IN_SECONDS);
         }
 
         return $result;
@@ -156,7 +156,7 @@ class MarketplaceApiClient
 
     private function buildCache()
     {
-        return Cache::getPersistentCache();
+        return Cache::getLazyCache();
     }
 
     private function getCacheKey($action, $query)

@@ -45,18 +45,18 @@ class ManagerTest extends IntegrationTestCase
     public function test_loadTrackerPlugins_shouldCacheListOfPlugins()
     {
         $cache = $this->getCacheForTrackerPlugins();
-        $this->assertFalse($cache->has($this->trackerCacheId));
+        $this->assertFalse($cache->contains($this->trackerCacheId));
 
         $pluginsToLoad = $this->manager->loadTrackerPlugins();
 
-        $this->assertTrue($cache->has($this->trackerCacheId));
-        $this->assertEquals($pluginsToLoad, $cache->get($this->trackerCacheId));
+        $this->assertTrue($cache->contains($this->trackerCacheId));
+        $this->assertEquals($pluginsToLoad, $cache->fetch($this->trackerCacheId));
     }
 
     public function test_loadTrackerPlugins_shouldBeAbleToLoadPluginsCorrectWhenItIsCached()
     {
         $pluginsToLoad = array('CoreHome', 'UserSettings', 'Login', 'CoreAdminHome');
-        $this->getCacheForTrackerPlugins()->set($this->trackerCacheId, $pluginsToLoad);
+        $this->getCacheForTrackerPlugins()->save($this->trackerCacheId, $pluginsToLoad);
 
         $pluginsToLoad = $this->manager->loadTrackerPlugins();
 
@@ -67,7 +67,7 @@ class ManagerTest extends IntegrationTestCase
     public function test_loadTrackerPlugins_shouldUnloadAllPlugins_IfThereAreNoneToLoad()
     {
         $pluginsToLoad = array();
-        $this->getCacheForTrackerPlugins()->set($this->trackerCacheId, $pluginsToLoad);
+        $this->getCacheForTrackerPlugins()->save($this->trackerCacheId, $pluginsToLoad);
 
         $pluginsToLoad = $this->manager->loadTrackerPlugins();
 
@@ -77,7 +77,7 @@ class ManagerTest extends IntegrationTestCase
 
     private function getCacheForTrackerPlugins()
     {
-        return PiwikCache::getMultiCache();
+        return PiwikCache::getEagerCache();
     }
 
     private function assertOnlyTrackerPluginsAreLoaded($expectedPluginNamesLoaded)

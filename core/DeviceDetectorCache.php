@@ -28,7 +28,7 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
     public function __construct($ttl = 300)
     {
         $this->ttl   = (int) $ttl;
-        $this->cache = PiwikCache::getPersistentCache();
+        $this->cache = PiwikCache::getLazyCache();
     }
 
     /**
@@ -47,7 +47,7 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
             return self::$staticCache[$id];
         }
 
-        return $this->cache->get($id);
+        return $this->cache->fetch($id);
     }
 
     /**
@@ -66,7 +66,7 @@ class DeviceDetectorCache implements \DeviceDetector\Cache\CacheInterface
 
         self::$staticCache[$id] = $content;
 
-        return $this->cache->set($id, $content, $this->ttl);
+        return $this->cache->save($id, $content, $this->ttl);
     }
 
 }

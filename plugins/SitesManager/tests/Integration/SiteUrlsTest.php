@@ -112,7 +112,7 @@ class SiteUrlsTest extends IntegrationTestCase
     {
         $urlsToFake = array(1 => 'Whatever');
         $cache      = $this->buildCache();
-        $cache->set('allSiteUrlsPerSite', $urlsToFake, 600);
+        $cache->save('allSiteUrlsPerSite', $urlsToFake, 600);
 
         $actual = $this->siteUrls->getAllCachedSiteUrls();
 
@@ -139,13 +139,13 @@ class SiteUrlsTest extends IntegrationTestCase
     private function assertValueInCache($value)
     {
         $cache    = $this->buildCache();
-        $siteUrls = $cache->get('allSiteUrlsPerSite');
+        $siteUrls = $cache->fetch('allSiteUrlsPerSite');
 
         $this->assertEquals($value, $siteUrls);
     }
 
     private function buildCache()
     {
-        return Cache::getPersistentCache();
+        return Cache::getLazyCache();
     }
 }

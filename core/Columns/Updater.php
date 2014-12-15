@@ -319,20 +319,20 @@ class Updater extends \Piwik\Updates
         $changes = self::getCurrentDimensionFileChanges();
 
         $cache = self::buildCache();
-        $cache->set(self::$cacheId, $changes);
+        $cache->save(self::$cacheId, $changes);
     }
 
     private static function buildCache()
     {
-        return PiwikCache::getMultiCache();
+        return PiwikCache::getEagerCache();
     }
 
     private static function getCachedDimensionFileChanges()
     {
         $cache = self::buildCache();
 
-        if ($cache->has(self::$cacheId)) {
-            return $cache->get(self::$cacheId);
+        if ($cache->contains(self::$cacheId)) {
+            return $cache->fetch(self::$cacheId);
         }
 
         return array();

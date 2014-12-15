@@ -216,7 +216,7 @@ abstract class ActionDimension extends Dimension
         $cacheId = CacheId::pluginAware('ActionDimensions');
         $cache   = PiwikCache::getTransientCache();
 
-        if (!$cache->has($cacheId)) {
+        if (!$cache->contains($cacheId)) {
 
             $plugins   = PluginManager::getInstance()->getPluginsLoadedAndActivated();
             $instances = array();
@@ -227,10 +227,10 @@ abstract class ActionDimension extends Dimension
                 }
             }
 
-            $cache->set($cacheId, $instances);
+            $cache->save($cacheId, $instances);
         }
 
-        return $cache->get($cacheId);
+        return $cache->fetch($cacheId);
     }
 
     /**

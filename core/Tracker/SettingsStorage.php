@@ -9,7 +9,6 @@
 
 namespace Piwik\Tracker;
 
-use Piwik\Cache\Multi;
 use Piwik\Settings\Storage;
 use Piwik\Tracker;
 use Piwik\Cache as PiwikCache;
@@ -24,12 +23,12 @@ class SettingsStorage extends Storage
         $cacheId = $this->getOptionKey();
         $cache = $this->getCache();
 
-        if ($cache->has($cacheId)) {
-            $settings = $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            $settings = $cache->fetch($cacheId);
         } else {
             $settings = parent::loadSettings();
 
-            $cache->set($cacheId, $settings);
+            $cache->save($cacheId, $settings);
         }
 
         return $settings;
@@ -54,7 +53,7 @@ class SettingsStorage extends Storage
 
     private static function buildCache()
     {
-        return PiwikCache::getMultiCache();
+        return PiwikCache::getEagerCache();
     }
 
 }

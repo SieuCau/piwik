@@ -158,8 +158,8 @@ class ProcessedReport
         $key   = CacheId::pluginAware($key);
         $cache = PiwikCache::getTransientCache();
 
-        if ($cache->has($key)) {
-            return $cache->get($key);
+        if ($cache->contains($key)) {
+            return $cache->fetch($key);
         }
 
         $parameters = array('idSites' => $idSites, 'period' => $period, 'date' => $date);
@@ -334,7 +334,7 @@ class ProcessedReport
         }
 
         $actualReports = array_values($availableReports);
-        $cache->set($key, $actualReports);
+        $cache->save($key, $actualReports);
 
         return $actualReports; // make sure array has contiguous key values
     }

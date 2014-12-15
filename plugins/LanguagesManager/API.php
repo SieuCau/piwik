@@ -273,10 +273,10 @@ class API extends \Piwik\Plugin\API
         }
 
         $cacheId = 'availableLanguages';
-        $cache = PiwikCache::getMultiCache();
+        $cache = PiwikCache::getEagerCache();
 
-        if ($cache->has($cacheId)) {
-            $languagesInfo = $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            $languagesInfo = $cache->fetch($cacheId);
         } else {
             $filenames = $this->getAvailableLanguages();
             $languagesInfo = array();
@@ -290,7 +290,7 @@ class API extends \Piwik\Plugin\API
                 );
             }
 
-            $cache->set($cacheId, $languagesInfo);
+            $cache->save($cacheId, $languagesInfo);
         }
 
         $this->availableLanguageNames = $languagesInfo;

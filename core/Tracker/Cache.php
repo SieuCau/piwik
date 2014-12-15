@@ -32,12 +32,12 @@ class Cache
     public static $cache;
 
     /**
-     * @return \Piwik\Cache\Persistent
+     * @return \Piwik\Cache\Lazy
      */
     private static function getCache()
     {
         if (is_null(self::$cache)) {
-            self::$cache = PiwikCache::getPersistentCache();
+            self::$cache = PiwikCache::getLazyCache();
         }
 
         return self::$cache;
@@ -67,7 +67,7 @@ class Cache
 
         $cache = self::getCache();
         $cacheId = (int) $idSite;
-        $cacheContent = $cache->get($cacheId);
+        $cacheContent = $cache->fetch($cacheId);
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -102,7 +102,7 @@ class Cache
         // if nothing is returned from the plugins, we don't save the content
         // this is not expected: all websites are expected to have at least one URL
         if (!empty($content)) {
-            $cache->set($cacheId, $content, self::getTtl());
+            $cache->save($cacheId, $content, self::getTtl());
         }
 
         return $content;
@@ -125,7 +125,7 @@ class Cache
     public static function getCacheGeneral()
     {
         $cache = self::getCache();
-        $cacheContent = $cache->get(self::$cacheIdGeneral);
+        $cacheContent = $cache->fetch(self::$cacheIdGeneral);
 
         if (false !== $cacheContent) {
             return $cacheContent;
@@ -173,7 +173,7 @@ class Cache
     {
         $cache = self::getCache();
 
-        return $cache->set(self::$cacheIdGeneral, $value);
+        return $cache->save(self::$cacheIdGeneral, $value);
     }
 
     /**

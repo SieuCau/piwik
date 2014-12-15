@@ -252,8 +252,8 @@ class Metrics
         $cacheId = CacheId::pluginAware('DefaultMetricTranslations');
         $cache   = PiwikCache::getTransientCache();
 
-        if ($cache->has($cacheId)) {
-            return $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            return $cache->fetch($cacheId);
         }
 
         $translations = array(
@@ -302,7 +302,7 @@ class Metrics
 
         $translations = array_map(array('\\Piwik\\Piwik','translate'), $translations);
 
-        $cache->set($cacheId, $translations);
+        $cache->save($cacheId, $translations);
 
         return $translations;
     }
@@ -312,8 +312,8 @@ class Metrics
         $cacheId = CacheId::languageAware('DefaultMetrics');
         $cache   = PiwikCache::getTransientCache();
 
-        if ($cache->has($cacheId)) {
-            return $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            return $cache->fetch($cacheId);
         }
 
         $translations = array(
@@ -324,7 +324,7 @@ class Metrics
         );
         $translations = array_map(array('\\Piwik\\Piwik','translate'), $translations);
 
-        $cache->set($cacheId, $translations);
+        $cache->save($cacheId, $translations);
 
         return $translations;
     }
@@ -334,8 +334,8 @@ class Metrics
         $cacheId = CacheId::languageAware('DefaultProcessedMetrics');
         $cache   = PiwikCache::getTransientCache();
 
-        if ($cache->has($cacheId)) {
-            return $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            return $cache->fetch($cacheId);
         }
 
         $translations = array(
@@ -347,7 +347,7 @@ class Metrics
         );
         $translations = array_map(array('\\Piwik\\Piwik','translate'), $translations);
 
-        $cache->set($cacheId, $translations);
+        $cache->save($cacheId, $translations);
 
         return $translations;
     }
@@ -388,8 +388,8 @@ class Metrics
         $cacheId = CacheId::pluginAware('DefaultMetricsDocumentation');
         $cache   = PiwikCache::getTransientCache();
 
-        if ($cache->has($cacheId)) {
-            return $cache->get($cacheId);
+        if ($cache->contains($cacheId)) {
+            return $cache->fetch($cacheId);
         }
 
         $translations = array(
@@ -415,7 +415,7 @@ class Metrics
 
         $translations = array_map(array('\\Piwik\\Piwik','translate'), $translations);
 
-        $cache->set($cacheId, $translations);
+        $cache->save($cacheId, $translations);
 
         return $translations;
     }

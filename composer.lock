@@ -438,12 +438,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/piwik/component-cache.git",
-                "reference": "13381b3cbbe1a20c7a8865c614d133731b58c16a"
+                "reference": "526cf1b531f2b523708a91411d50f84d9c1a555d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/piwik/component-cache/zipball/13381b3cbbe1a20c7a8865c614d133731b58c16a",
-                "reference": "13381b3cbbe1a20c7a8865c614d133731b58c16a",
+                "url": "https://api.github.com/repos/piwik/component-cache/zipball/526cf1b531f2b523708a91411d50f84d9c1a555d",
+                "reference": "526cf1b531f2b523708a91411d50f84d9c1a555d",
                 "shasum": ""
             },
             "require": {
@@ -463,7 +463,21 @@
             "license": [
                 "LGPL-3.0"
             ],
-            "time": "2014-12-15 02:08:36"
+            "authors": [
+                {
+                    "name": "The Piwik Team",
+                    "email": "hello@piwik.org",
+                    "homepage": "http://piwik.org/the-piwik-team/"
+                }
+            ],
+            "description": "PHP caching library based on Doctrine cache",
+            "keywords": [
+                "array",
+                "cache",
+                "file",
+                "redis"
+            ],
+            "time": "2014-12-15 21:27:21"
         },
         {
             "name": "piwik/decompress",

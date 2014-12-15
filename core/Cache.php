@@ -17,12 +17,11 @@ class Cache
 
     /**
      * This cache will persist any set data in the configured backend.
-     * @return Cache\Persistent
-     * @throws \DI\NotFoundException
+     * @return Cache\Lazy
      */
-    public static function getPersistentCache()
+    public static function getLazyCache()
     {
-        return StaticContainer::getContainer()->get('Piwik\Cache\Persistent');
+        return StaticContainer::getContainer()->get('Piwik\Cache\Lazy');
     }
 
     /**
@@ -44,18 +43,18 @@ class Cache
      * If you invalidate a specific cache key it will be only invalidate for the current environment. Eg only tracker
      * cache, or only web cache.
      *
-     * @return Cache\Multi
+     * @return Cache\Eager
      */
-    public static function getMultiCache()
+    public static function getEagerCache()
     {
-        return StaticContainer::getContainer()->get('Piwik\Cache\Multi');
+        return StaticContainer::getContainer()->get('Piwik\Cache\Eager');
     }
 
     public static function flushAll()
     {
-        self::getPersistentCache()->flushAll();
+        self::getLazyCache()->flushAll();
         self::getTransientCache()->flushAll();
-        self::getMultiCache()->flushAll();
+        self::getEagerCache()->flushAll();
     }
 
     private static function getOptions($type)

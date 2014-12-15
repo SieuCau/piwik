@@ -78,7 +78,7 @@ abstract class IntegrationTestCase extends SystemTestCase
             self::restoreDbTables(self::$tableData);
         }
 
-        PiwikCache::getMultiCache()->flushAll();
+        PiwikCache::getEagerCache()->flushAll();
         PiwikCache::getTransientCache()->flushAll();
     }
 

@@ -159,7 +159,7 @@ abstract class ConversionDimension extends Dimension
         $cacheId = CacheId::pluginAware('ConversionDimensions');
         $cache   = PiwikCache::getTransientCache();
 
-        if (!$cache->has($cacheId)) {
+        if (!$cache->contains($cacheId)) {
 
             $plugins   = PluginManager::getInstance()->getPluginsLoadedAndActivated();
             $instances = array();
@@ -170,10 +170,10 @@ abstract class ConversionDimension extends Dimension
                 }
             }
 
-            $cache->set($cacheId, $instances);
+            $cache->save($cacheId, $instances);
         }
 
-        return $cache->get($cacheId);
+        return $cache->fetch($cacheId);
     }
 
     /**

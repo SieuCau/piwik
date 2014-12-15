@@ -22,11 +22,11 @@ class SiteUrls
     public function getAllCachedSiteUrls()
     {
         $cache    = $this->getCache();
-        $siteUrls = $cache->get(self::$cacheId);
+        $siteUrls = $cache->fetch(self::$cacheId);
 
         if (empty($siteUrls)) {
             $siteUrls = $this->getAllSiteUrls();
-            $cache->set(self::$cacheId, $siteUrls, 1800);
+            $cache->save(self::$cacheId, $siteUrls, 1800);
         }
 
         return $siteUrls;
@@ -52,6 +52,6 @@ class SiteUrls
 
     private static function getCache()
     {
-        return Cache::getPersistentCache();
+        return Cache::getLazyCache();
     }
 }
