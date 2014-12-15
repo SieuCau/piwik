@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d30a73419026e3ebb8fbc8f4d1b3586f",
+    "hash": "507e9aa0b07456423ffc15612e36e5b7",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -438,12 +438,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/piwik/component-cache.git",
-                "reference": "526cf1b531f2b523708a91411d50f84d9c1a555d"
+                "reference": "ca290b0b4662a14fb8fc10e4b99829037873fa53"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/piwik/component-cache/zipball/526cf1b531f2b523708a91411d50f84d9c1a555d",
-                "reference": "526cf1b531f2b523708a91411d50f84d9c1a555d",
+                "url": "https://api.github.com/repos/piwik/component-cache/zipball/ca290b0b4662a14fb8fc10e4b99829037873fa53",
+                "reference": "ca290b0b4662a14fb8fc10e4b99829037873fa53",
                 "shasum": ""
             },
             "require": {
@@ -477,7 +477,7 @@
                 "file",
                 "redis"
             ],
-            "time": "2014-12-15 21:27:21"
+            "time": "2014-12-15 21:41:03"
         },
         {
             "name": "piwik/decompress",
