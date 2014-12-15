@@ -573,7 +573,7 @@ class API extends \Piwik\Plugin\API
 
     private function getCacheId($idSite)
     {
-        return CacheId::pluginAware('Goals.getGoals.' . (int) $idSite);
+        return CacheId::pluginAware('Goals.getGoals.' . $idSite);
     }
 
     private function getGoalsInfoStaticCache()

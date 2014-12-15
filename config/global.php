@@ -31,7 +31,7 @@ return array(
 
     'cache.backend' => DI\factory(function (ContainerInterface $c) {
         if (\Piwik\Common::isPhpCliMode()) { // todo replace this with isTest() instead of isCli()
-            $backend = 'array';
+            $backend = 'file';
         } elseif (\Piwik\Development::isEnabled()) {
             $backend = 'null';
         } else {
