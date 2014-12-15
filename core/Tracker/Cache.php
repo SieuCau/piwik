@@ -27,7 +27,7 @@ class Cache
 
     /**
      * Public for tests only
-     * @var Cache
+     * @var \Piwik\Cache\Lazy
      */
     public static $cache;
 
@@ -173,7 +173,7 @@ class Cache
     {
         $cache = self::getCache();
 
-        return $cache->save(self::$cacheIdGeneral, $value);
+        return $cache->save(self::$cacheIdGeneral, $value, self::getTtl());
     }
 
     /**
