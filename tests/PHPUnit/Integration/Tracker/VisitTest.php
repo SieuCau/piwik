@@ -9,7 +9,8 @@
 namespace Piwik\Tests\Integration\Tracker;
 
 use Piwik\Access;
-use Piwik\Cache\PluginAwareStaticCache;
+use Piwik\Cache;
+use Piwik\CacheId;
 use Piwik\Date;
 use Piwik\Network\IPUtils;
 use Piwik\Plugin\Manager;
@@ -331,8 +332,8 @@ class VisitTest extends IntegrationTestCase
             $dimensions[] = $dim;
         }
 
-        $cache = new PluginAwareStaticCache('VisitDimensions');
-        $cache->set($dimensions);
+        $cache = Cache::getTransientCache();
+        $cache->save(CacheId::pluginAware('VisitDimensions'), $dimensions);
     }
 }
 
