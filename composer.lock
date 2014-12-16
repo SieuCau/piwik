@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "507e9aa0b07456423ffc15612e36e5b7",
+    "hash": "993a7439f15dd4d11b2684f6e35b944d",
     "packages": [
         {
             "name": "container-interop/container-interop",
@@ -434,16 +434,16 @@
         },
         {
             "name": "piwik/cache",
-            "version": "dev-master",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/piwik/component-cache.git",
-                "reference": "ca290b0b4662a14fb8fc10e4b99829037873fa53"
+                "reference": "1cbe0012f703b5462e87520ebcf76bdca89026e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/piwik/component-cache/zipball/ca290b0b4662a14fb8fc10e4b99829037873fa53",
-                "reference": "ca290b0b4662a14fb8fc10e4b99829037873fa53",
+                "url": "https://api.github.com/repos/piwik/component-cache/zipball/1cbe0012f703b5462e87520ebcf76bdca89026e8",
+                "reference": "1cbe0012f703b5462e87520ebcf76bdca89026e8",
                 "shasum": ""
             },
             "require": {
@@ -477,7 +477,7 @@
                 "file",
                 "redis"
             ],
-            "time": "2014-12-15 21:41:03"
+            "time": "2014-12-16 01:47:11"
         },
         {
             "name": "piwik/decompress",
@@ -1839,7 +1839,6 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "mnapoli/php-di": 20,
-        "piwik/cache": 20,
         "facebook/xhprof": 20
     },
     "prefer-stable": false,
