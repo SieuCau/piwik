@@ -10,7 +10,6 @@ namespace Piwik;
 
 use Piwik\Cache\Backend;
 use Piwik\Container\StaticContainer;
-use Piwik\Cache\Backend\Factory\BackendNotFoundException;
 
 class Cache
 {
@@ -57,6 +56,20 @@ class Cache
         self::getEagerCache()->flushAll();
     }
 
+    /**
+     * @param $type
+     * @return Cache\Backend
+     */
+    public static function buildBackend($type)
+    {
+        $factory = new Cache\Backend\Factory();
+        $options = self::getOptions($type);
+
+        $backend = $factory->buildBackend($type, $options);
+
+        return $backend;
+    }
+
     private static function getOptions($type)
     {
         $options = self::getBackendOptions($type);
@@ -85,20 +98,6 @@ class Cache
         }
 
         return $options;
-    }
-
-    /**
-     * @param $type
-     * @return Cache\Backend
-     */
-    public static function buildBackend($type)
-    {
-        $factory = new Cache\Backend\Factory();
-        $options = self::getOptions($type);
-
-        $backend = $factory->buildBackend($type, $options);
-
-        return $backend;
     }
 
     private static function getBackendOptions($backend)

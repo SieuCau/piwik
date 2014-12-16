@@ -15,14 +15,14 @@ class CacheId
 {
     public static function languageAware($cacheId)
     {
-        return $cacheId . Translate::getLanguageLoaded();
+        return $cacheId . '-' . Translate::getLanguageLoaded();
     }
 
     public static function pluginAware($cacheId)
     {
         $pluginManager = Manager::getInstance();
         $pluginNames   = $pluginManager->getLoadedPluginsName();
-        $cacheId       = $cacheId . md5(implode('', $pluginNames));
+        $cacheId       = $cacheId . '-' . md5(implode('', $pluginNames));
         $cacheId       = self::languageAware($cacheId);
 
         return $cacheId;

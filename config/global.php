@@ -44,8 +44,7 @@ return array(
     'Piwik\Cache\Transient' => DI\object(),
     'Piwik\Cache\Eager' => DI\factory(function (ContainerInterface $c) {
 
-        $type    = $c->get('cache.backend');
-        $backend = \Piwik\Cache::buildBackend($type);
+        $backend = $c->get('Piwik\Cache\Backend');
         $cacheId = 'eagercache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
 
         if (SettingsServer::isTrackerApiRequest()) {
