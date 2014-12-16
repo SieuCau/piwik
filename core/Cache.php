@@ -96,23 +96,7 @@ class Cache
         $factory = new Cache\Backend\Factory();
         $options = self::getOptions($type);
 
-        try {
-            $backend = $factory->buildBackend($type, $options);
-        } catch (BackendNotFoundException $e) {
-            $backend = null;
-
-            /**
-             * TODO document this event
-             * @ignore this API is not stable yet
-             */
-            Piwik::postEvent('Cache.newBackend', array($type, $options, &$backend));
-
-            if (is_object($backend) && $backend instanceof Backend) {
-                return $backend;
-            }
-
-            throw $e;
-        }
+        $backend = $factory->buildBackend($type, $options);
 
         return $backend;
     }
