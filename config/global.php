@@ -45,6 +45,8 @@ return array(
     'Piwik\Cache\Eager' => DI\factory(function (ContainerInterface $c) {
 
         $backend = $c->get('Piwik\Cache\Backend');
+
+        // TODO once we have test environment use simpler key to have it easier testable and less duplicated code in test
         $cacheId = 'eagercache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-';
 
         if (SettingsServer::isTrackerApiRequest()) {

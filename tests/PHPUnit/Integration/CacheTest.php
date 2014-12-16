@@ -9,6 +9,8 @@
 namespace Piwik\Tests\Integration;
 
 use Piwik\Cache;
+use Piwik\Container\StaticContainer;
+use Piwik\Piwik;
 use Piwik\Tests\Framework\TestCase\IntegrationTestCase;
 use Piwik\Translate;
 
@@ -19,12 +21,10 @@ class CacheTest extends IntegrationTestCase
 {
     public function setUp()
     {
-        Translate::loadEnglishTranslation();
     }
 
     public function tearDown()
     {
-        Translate::unloadEnglishTranslation();
     }
 
     public function test_getLazyCache_shouldCreateAnInstanceOfLazy()
@@ -55,6 +55,21 @@ class CacheTest extends IntegrationTestCase
         $cache2 = Cache::getEagerCache();
 
         $this->assertSame($cache1, $cache2);
+    }
+
+    public function test_getEagerCache_shouldPersistOnceEventWasTriggered()
+    {
+        $storageId = 'eagercache-' . str_replace(array('.', '-'), '', \Piwik\Version::VERSION) . '-ui';
+        $cache = Cache::getEagerCache();
+        $cache->save('test', 'mycontent'); // make sure something was changed, otherwise it won't save anything
+
+        /** @var \Piwik\Cache\Backend $backend */
+        $backend = StaticContainer::getContainer()->get('Piwik\Cache\Backend');
+        $this->assertFalse($backend->doContains($storageId));
+
+        Piwik::postEvent('Request.dispatch.end'); // should trigger save
+
+        $this->assertTrue($backend->doContains($storageId));
     }
 
     public function test_getTransientCache_shouldCreateAnInstanceOfTransient()
