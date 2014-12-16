@@ -79,7 +79,7 @@ log_only_when_debug_parameter = 0
 logger_file_path = tmp/logs/piwik.log
 
 [Cache]
-backend = file
+backend = chained
 
 [ChainedCache]
 backends[] = array
